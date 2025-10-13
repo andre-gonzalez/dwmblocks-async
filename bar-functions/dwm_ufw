@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# A dwm_bar function that shows the current date and time
+# Joe Standring <git@joestandring.com>
+# GNU GPLv3
+
+# Date is formatted like like this: "[Mon 01-01-00 00:00:00]"
+dwm_ufw () {
+		status=$(sudo ufw status | head -n 1)
+		if [ "$status" = "Status: inactive" ]; then
+				echo "UFW "
+		elif [ "$status" = "Status: active" ]; then
+				echo "UFW "
+		fi
+}
+
+dwm_ufw

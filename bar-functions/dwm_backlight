@@ -1,0 +1,33 @@
+#!/bin/sh
+
+#Dependencies: brightnessctl
+
+# Show percentage for 2 seconds after brightness change
+FLAG_FILE="/tmp/dwm_backlight_show"
+
+dwm_backlight() {
+	ACTUAL=$(brightnessctl g)
+	MAX=$(brightnessctl m)
+	BRIGHT=$((ACTUAL * 100 / MAX))
+
+	if [ "$BRIGHT" -eq 100 ]; then
+		printf "󰃠"
+	elif [ "$BRIGHT" -le 30 ]; then
+		printf "󰃞" "$BRIGHT"
+	elif [ "$BRIGHT" -le 50 ]; then
+		printf "󰃝"
+	elif [ "$BRIGHT" -le 99 ]; then
+		printf "󰃟"
+	else
+		ICON "󰖨"
+	fi
+
+	# Show percentage if flag file exists
+	if [ -f "$FLAG_FILE" ]; then
+		printf "%s %d%%\n" "$ICON" "$BRIGHT"
+	else
+		printf "%s\n" "$ICON"
+	fi
+}
+
+dwm_backlight

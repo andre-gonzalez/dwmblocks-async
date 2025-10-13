@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# A dwm_bar function to show the current network connection/SSID, Wifi Strength, private IP using Connmanctl.
+# procrastimax <heykeroth.dev@gmail.com>
+# GNU GPLv3
+
+# Dependencies: connman
+
+dwm_connman () {
+    printf "%s"
+    if [ "$IDENTIFIER" = "unicode" ]; then
+        printf ""
+    else
+        printf " "
+    fi
+
+    # get the connmanctl service name
+    # this is a UID starting with 'vpn_', 'wifi_', or 'ethernet_', we dont care for the vpn one
+    # if the servicename string is empty, there is no online connection
+    SERVICENAME=$(connmanctl services | grep -E "^\*AO|^\*O" | grep -Eo 'wifi_.*|ethernet_.*')
+
+    if [ ! "$SERVICENAME" ]; then
+        printf "OFFLINE"
+        return
+    else
+        STRENGTH=$(connmanctl services "$SERVICENAME" | sed -n -e 's/Strength =//p' | tr -d ' ')
+        CONNAME=$(connmanctl services "$SERVICENAME" | sed -n -e 's/Name =//p' | tr -d ' ')
+    fi
+
+    # if STRENGTH is empty, we have a wired connection
+    if [ "$STRENGTH" ]; then
+        printf "%s %s%s%%" "$CONNAME" "$STRENGTH"
+    else
+        printf "%s %s" "$CONNAME"
+    fi
+}
+
+dwm_connman

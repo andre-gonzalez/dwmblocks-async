@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Dependencies: pamixer
+
+FLAG_FILE="/tmp/dwm_volume_show"
+
+dwm_pulse() {
+    # Get current volume and mute status
+    VOL=$(pamixer --get-volume)
+    MUTED=$(pamixer --get-mute)
+
+    # Determine icon
+    if [ "$MUTED" = "true" ] || [ "$VOL" -eq 0 ]; then
+        ICON="󰸈"
+    elif [ "$VOL" -le 33 ]; then
+        ICON="󰖀"
+    elif [ "$VOL" -le 66 ]; then
+        ICON="󰕾"
+    else
+        ICON=""
+    fi
+
+    # Show percentage only if flag file exists
+    if [ -f "$FLAG_FILE" ]; then
+        printf "%s %s%%\n" "$ICON" "$VOL"
+    else
+        printf "%s\n" "$ICON"
+    fi
+}
+
+dwm_pulse

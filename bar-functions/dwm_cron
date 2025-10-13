@@ -1,0 +1,14 @@
+#!/bin/sh
+
+dwm_cron () {
+		find "$HOME"/.cron-errors/ -empty -type f -delete
+		COUNT=$(ls -l "$HOME"/.cron-errors | wc -l)
+		COUNT=$(expr $COUNT - 1)
+		if [ "$COUNT" = 0 ]; then
+				exit
+		else
+				echo " $COUNT"
+		fi
+}
+
+dwm_cron

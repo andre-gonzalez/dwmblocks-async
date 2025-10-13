@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# A dwm_bar function to display information regarding system memory, CPU temperature, and storage
+# Joe Standring <git@joestandring.com>
+# GNU GPLv3
+
+df_check_location='/home'
+
+dwm_resources () {
+	# Gather memory usage data
+	free_output=$(free -h | grep Mem)
+	MEMUSED=$(echo $free_output | awk '{print $3}')
+	# MEMTOT=$(echo $free_output | awk '{print $2}')
+
+	# Gather CPU usage
+	CPU=$(top -bn1 | awk '/Cpu/ {print int($2)}')%
+
+	# Determine filesystem type and collect storage usage
+    filesystem=$(df -Th /home | awk 'FNR == 2{print $2}')
+	# Used and total storage in /home (rounded to 1024B)
+    if [ "$filesystem" = "btrfs" ]; then
+		STOUSED=$(btrfs filesystem usage -H "$df_check_location" 2> /dev/null | awk '/   Used:/ {print int($2)}' | sed 's/[^0-9.]//g')
+		STOTOT=$(btrfs filesystem usage -H "$df_check_location" 2> /dev/null | awk '/Device size/ {print int($3)}' | sed 's/[^0-9.]//g')
+    else
+    	df_output=$(df -h $df_check_location | tail -n 1)
+    	STOUSED=$(echo $df_output | awk '{print $3}')
+    	STOTOT=$(echo $df_output | awk '{print $2}')
+    fi
+
+	# Display the output
+	printf " %sGB ·  %s ·  %s\n" "$STOUSED" "$MEMUSED" "$CPU"
+
+	# if [ $(( STOTOT - STOUSED )) -lt 15 ]; then
+	# 		notify-send "HD cheio"
+	# fi
+	if [ $(( STOTOT - STOUSED )) -lt 15 ]; then
+			notify-send "HD cheio"
+	fi
+}
+
+dwm_resources

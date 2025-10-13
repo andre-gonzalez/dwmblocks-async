@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Change BAT1 to whatever your battery is identified as. Typically BAT0 or BAT1
+BAT="BAT1"
+CHARGE=$(cat /sys/class/power_supply/$BAT/capacity)
+STATUS=$(cat /sys/class/power_supply/$BAT/status)
+
+# Determine icon based on charge percentage
+if [ "$CHARGE" -ge 98 ]; then
+	ICON=""  # full battery
+elif [ "$CHARGE" -le 20 ]; then
+	ICON="  $CHARGE"  # very low
+elif [ "$CHARGE" -le 40 ]; then
+	ICON=""  # low
+elif [ "$CHARGE" -le 60 ]; then
+	ICON=""  # medium
+elif [ "$CHARGE" -le 97 ]; then
+	ICON=""  # good
+else
+	ICON="?"  # unknown
+fi
+
+# Display status with appropriate icon
+if [ "$STATUS" = "Charging" ]; then
+	printf "%s +\n" "$ICON"
+elif [ "$STATUS" = "Full" ] || [ "$STATUS" = "Unknown" ]; then
+	printf "%s\n" "$ICON"
+else
+	printf "%s -\n" "$ICON"
+
+	if [ "$CHARGE" -le 30 ]; then
+		notify-send -u critical "Bateria em ${CHARGE}%"
+	fi
+fi
