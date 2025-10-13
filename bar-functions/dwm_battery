@@ -23,10 +23,10 @@ fi
 # Display status with appropriate icon
 if [ "$STATUS" = "Charging" ]; then
 	printf "%s +\n" "$ICON"
-elif [ "$STATUS" = "Full" ] || [ "$STATUS" = "Unknown" ]; then
-	printf "%s\n" "$ICON"
+# elif [ "$STATUS" = "Full" ] || [ "$STATUS" = "Unknown" ]; then
+	# printf "%s\n" "$ICON"
 else
-	printf "%s -\n" "$ICON"
+	printf "%s\n" "$ICON"
 
 	if [ "$CHARGE" -le 30 ]; then
 		notify-send -u critical "Bateria em ${CHARGE}%"
