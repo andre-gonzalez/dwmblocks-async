@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // String used to delimit block outputs in the status.
-#define DELIMITER "  "
+#define DELIMITER " · "
 
 // Maximum number of Unicode characters that a block can output.
 #define MAX_BLOCK_OUTPUT_LENGTH 45
@@ -18,15 +18,18 @@
 
 // Define blocks for the status feed as X(icon, cmd, interval, signal).
 #define BLOCKS(X)             \
-    X("", "sb-mail", 600, 1)  \
-    X("", "sb-music", 0, 2)   \
-    X("", "sb-disk", 1800, 3) \
-    X("", "sb-memory", 10, 4) \
-    X("", "sb-loadavg", 5, 5) \
-    X("", "sb-mic", 0, 6)     \
-    X("", "sb-record", 0, 7)  \
-    X("", "sb-volume", 0, 8)  \
-    X("", "sb-battery", 5, 9) \
-    X("", "sb-date", 1, 10)
+	X("",	"dwm_countdown", 1,  0) \
+	X("",	"dwm_vpn", 5,  0) \
+	X("",	"dwm_spotify", 3,  0) \
+	X("",	"dwm_bluetooth", 60, 12) \
+	X("",	"dwm_systemd_networkd", 5,  0) \
+	X("",	"dwm_ufw",	60, 0) \
+	X("",	"dwm_resources", 5,  0) \
+	X("",	"dwm_packages",	14400, 13) \
+	X("",	"dwm_battery", 300,  0) \
+	X("",	"dwm_pulse", 0, 10) \
+	X("",	"dwm_backlight", 0, 11) \
+	X("",	"dwm_do_not_disturb", 0,  14) \
+	X("",	"dwm_date", 30,  0) \
 
 #endif  // CONFIG_H
