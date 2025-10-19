@@ -2,21 +2,18 @@
 dwm_bluetooth () {
 		name=$(bluetoothctl info | grep 'Name' | cut -d : -f 2 | xargs)
 		connected=$(bluetoothctl info | grep 'Connected:' | grep -o 'no\|yes' | head -n 1)
-		powered=$(bluetoothctl show | grep Powered | grep -o 'no\|yes')
 		battery=$(bluetoothctl info | grep 'Battery Percentage' | grep -oE '\([0-9]+\)' | grep -oE '[0-9]+')
 
 		if [ "$connected" = "yes" ]; then
 				if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
 						printf "󰂰 XM3 $battery%%"
-				elif ["$name" = "Jabra Elite 3"]; then
+				elif [ "$name" = "Jabra Elite 3" ]; then
 						printf "󰂰 Jabra $battery%%"
+				elif [ "$name" = "Mi Bluetooth Speaker" ]; then
+						printf "󰂰 Speaker"
 				else
 						printf "󰂰 $name $battery%%"
 				fi
-		# elif [ "$powered" = "yes" ]; then
-		# 				printf "󰂯"
-		# else
-		# 				printf "󰂲"
 		fi
 
 		printf "%s\n" "$SEP2"
