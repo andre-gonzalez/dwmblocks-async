@@ -7,28 +7,26 @@ STATUS=$(cat /sys/class/power_supply/$BAT/status)
 
 # Determine icon based on charge percentage
 if [ "$CHARGE" -ge 98 ]; then
-	ICON=""  # full battery
+	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
-	ICON="  $CHARGE"  # very low
+	ICON="  $CHARGE"
 elif [ "$CHARGE" -le 40 ]; then
-	ICON=""  # low
+	ICON="  $CHARGE"
 elif [ "$CHARGE" -le 60 ]; then
-	ICON=""  # medium
+	ICON=""
 elif [ "$CHARGE" -le 97 ]; then
-	ICON=""  # good
+	ICON=""
 else
-	ICON="?"  # unknown
+	ICON="?"
 fi
 
 # Display status with appropriate icon
 if [ "$STATUS" = "Charging" ]; then
 	printf "%s +\n" "$ICON"
-# elif [ "$STATUS" = "Full" ] || [ "$STATUS" = "Unknown" ]; then
-	# printf "%s\n" "$ICON"
 else
 	printf "%s\n" "$ICON"
 
 	if [ "$CHARGE" -le 30 ]; then
-		notify-send -u critical "Bateria em ${CHARGE}%"
+		notify-send -u critical "Battery ${CHARGE}%"
 	fi
 fi
