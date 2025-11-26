@@ -1,15 +1,33 @@
 #!/bin/sh
 
-disturb () {
+END_FILE="$HOME/.cache/do-not-disturb-end"
 
-status="$(dunstctl is-paused)"
+disturb() {
+    status="$(dunstctl is-paused)"
 
-if [ "$status" = "false" ]; then
-		echo ""
-elif [ "$status" = "true" ]; then
-		echo ""
-fi
+    if [ "$status" = "false" ]; then
+        echo ""
+        exit 0
+    fi
 
+    # DND is ON
+    if [ -f "$END_FILE" ]; then
+        end_ts=$(cat "$END_FILE")
+
+        # Convert end timestamp to local time (HH:MM)
+        end_time=$(date -d "@$end_ts" +%H:%M 2>/dev/null)
+
+        # In case timestamp is invalid or expired
+        if [ -z "$end_time" ]; then
+            echo ""
+            exit 0
+        fi
+
+        echo " $end_time"
+    else
+        # No timer set: just show icon
+        echo ""
+    fi
 }
 
 disturb
