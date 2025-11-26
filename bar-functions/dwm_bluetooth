@@ -23,19 +23,19 @@ dwm_bluetooth () {
 						if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
 								device_str="󰂰 XM3"
 								if [ -n "$battery" ]; then
-										device_str="$device_str $battery%%"
+										device_str="$device_str $battery%"
 								fi
 						elif [ "$name" = "Jabra Elite 3" ]; then
 								device_str="󰂰 Jabra"
 								if [ -n "$battery" ]; then
-										device_str="$device_str $battery%%"
+										device_str="$device_str $battery%"
 								fi
 						elif [ "$name" = "Mi Bluetooth Speaker" ]; then
 								device_str="󰂰 Speaker"
 						else
 								device_str="󰂰 $name"
 								if [ -n "$battery" ]; then
-										device_str="$device_str $battery%%"
+										device_str="$device_str $battery%"
 								fi
 						fi
 
