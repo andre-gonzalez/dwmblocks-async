@@ -8,8 +8,17 @@ df_check_location='/home'
 
 dwm_resources () {
 	# Gather memory usage data
-	free_output=$(free -h | grep Mem)
-	MEMUSED=$(echo $free_output | awk '{print $3}')
+	free_output=$(free | grep Mem)
+	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
+	# Convert KB to GB and round to whole number
+	MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
+	if [ "$MEMUSED_GB" -ge 1 ]; then
+		MEMUSED="${MEMUSED_GB}G"
+	else
+		# If less than 1GB, show in MB
+		MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
+		MEMUSED="${MEMUSED_MB}M"
+	fi
 	# MEMTOT=$(echo $free_output | awk '{print $2}')
 
 	# Gather CPU usage
