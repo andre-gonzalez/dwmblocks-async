@@ -1,19 +1,57 @@
 #!/bin/dash
 dwm_bluetooth () {
-		name=$(bluetoothctl info | grep 'Name' | cut -d : -f 2 | xargs)
-		connected=$(bluetoothctl info | grep 'Connected:' | grep -o 'no\|yes' | head -n 1)
-		battery=$(bluetoothctl info | grep 'Battery Percentage' | grep -oE '\([0-9]+\)' | grep -oE '[0-9]+')
+		output=""
+		first=true
 
-		if [ "$connected" = "yes" ]; then
-				if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
-						printf "󰂰 XM3 $battery%%"
-				elif [ "$name" = "Jabra Elite 3" ]; then
-						printf "󰂰 Jabra $battery%%"
-				elif [ "$name" = "Mi Bluetooth Speaker" ]; then
-						printf "󰂰 Speaker"
-				else
-						printf "󰂰 $name $battery%%"
+		# Get all connected devices - extract MAC addresses
+		devices=$(bluetoothctl devices Connected | awk '{print $2}')
+		
+		# Process each MAC address
+		for mac in $devices; do
+				# Skip empty MAC addresses
+				if [ -z "$mac" ]; then
+						continue
 				fi
+				
+				# Get device info for this MAC address
+				info=$(bluetoothctl info "$mac" 2>/dev/null)
+				name=$(echo "$info" | grep 'Name' | cut -d : -f 2 | xargs)
+				battery=$(echo "$info" | grep 'Battery Percentage' | grep -oE '\([0-9]+\)' | grep -oE '[0-9]+')
+
+				if [ -n "$name" ]; then
+						# Format device name
+						if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
+								device_str="󰂰 XM3"
+								if [ -n "$battery" ]; then
+										device_str="$device_str $battery%%"
+								fi
+						elif [ "$name" = "Jabra Elite 3" ]; then
+								device_str="󰂰 Jabra"
+								if [ -n "$battery" ]; then
+										device_str="$device_str $battery%%"
+								fi
+						elif [ "$name" = "Mi Bluetooth Speaker" ]; then
+								device_str="󰂰 Speaker"
+						else
+								device_str="󰂰 $name"
+								if [ -n "$battery" ]; then
+										device_str="$device_str $battery%%"
+								fi
+						fi
+
+						# Add delimiter if not first device
+						if [ "$first" = "true" ]; then
+								output="$device_str"
+								first=false
+						else
+								output="$output · $device_str"
+						fi
+				fi
+		done
+
+		# Print output if any devices were found
+		if [ -n "$output" ]; then
+				printf "%s" "$output"
 		fi
 
 		printf "%s\n" "$SEP2"
