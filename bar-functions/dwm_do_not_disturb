@@ -6,7 +6,7 @@ disturb() {
     status="$(dunstctl is-paused)"
 
     if [ "$status" = "false" ]; then
-        echo ""
+        # echo ""
         exit 0
     fi
 
