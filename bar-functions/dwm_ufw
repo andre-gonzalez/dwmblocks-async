@@ -10,7 +10,8 @@ dwm_ufw () {
 		if [ "$status" = "Status: inactive" ]; then
 				echo "UFW "
 		elif [ "$status" = "Status: active" ]; then
-				echo "UFW "
+				exit 0
+				# echo "UFW "
 		fi
 }
 
