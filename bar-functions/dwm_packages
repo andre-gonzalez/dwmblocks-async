@@ -1,8 +1,8 @@
 #!/bin/sh
 
 cupd=$(checkupdates | wc -l)
-if [ "$cupd" = 0 ]; then
-		printf ""
+if [ "$cupd" -gt 100 ]; then
+	printf " %s\n" "$cupd"
 else
-		printf " %s\n" "$cupd"
+	printf ""
 fi
