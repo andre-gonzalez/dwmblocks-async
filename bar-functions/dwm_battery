@@ -5,13 +5,11 @@ BAT="BAT1"
 CHARGE=$(cat /sys/class/power_supply/$BAT/capacity)
 STATUS=$(cat /sys/class/power_supply/$BAT/status)
 
-# Do not print anything if charged and not discharging
-if [ "$CHARGE" -ge 98 ] && [ "$STATUS" != "Discharging" ]; then
-	exit
-fi
-
 # Determine icon based on charge percentage
-if [ "$CHARGE" -ge 98 ]; then
+if [ "$CHARGE" -ge 98 ] && [ "$STATUS" != "Discharging" ]; then
+	# Do not print anything if charged and not discharging
+	exit
+elif [ "$CHARGE" -ge 98 ]; then
 	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
 	ICON=" $CHARGE"
