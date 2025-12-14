@@ -14,9 +14,9 @@ fi
 if [ "$CHARGE" -ge 98 ]; then
 	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
-	ICON="  $CHARGE"
+	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 40 ]; then
-	ICON="  $CHARGE"
+	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 60 ]; then
 	ICON=""
 elif [ "$CHARGE" -le 97 ]; then
