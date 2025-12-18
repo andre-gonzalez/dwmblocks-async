@@ -22,7 +22,7 @@
 	X("",	"dwm_countdown", 1,  0) \
 	X("",	"dwm_vpn", 5,  0) \
 	X("",	"dwm_spotify", 3,  0) \
-	X("",	"dwm_bluetooth", 60, 12) \ // 46
+	X("",	"dwm_bluetooth", 60, 12) \
 	X("",	"dwm_systemd_networkd", 5,  0) \
 	X("",	"dwm_ufw",	60, 0) \
 	X("",	"dwm_storage", 5,  0) \
@@ -32,7 +32,7 @@
 	X("",	"dwm_battery", 300,  0) \
 	X("",	"dwm_pulse", 0, 10) \
 	X("",	"dwm_backlight", 0, 11) \
-	X("",	"dwm_do_not_disturb", 0,  14) \ // 48
+	X("",	"dwm_do_not_disturb", 0,  14) \
 	X("",	"dwm_date", 30,  0) \
 
 #endif  // CONFIG_H
