@@ -5,9 +5,22 @@
 FLAG_FILE="/tmp/dwm_volume_show"
 
 dwm_pulse() {
+    # Check if there is a default sink available
+    if ! DEFAULT_SINK=$(pamixer --get-default-sink 2>/dev/null) || [ -z "$DEFAULT_SINK" ]; then
+        exit 0
+    fi
+
+    # Filter out dummy and null sinks - they don't represent real sound outputs
+    if echo "$DEFAULT_SINK" | grep -qiE "(dummy|null)"; then
+        exit 0
+    fi
+
     # Get current volume and mute status
-    VOL=$(pamixer --get-volume)
-    MUTED=$(pamixer --get-mute)
+    # If volume retrieval fails, there's no usable sink
+    if ! VOL=$(pamixer --get-volume 2>/dev/null) || [ -z "$VOL" ]; then
+        exit 0
+    fi
+    MUTED=$(pamixer --get-mute 2>/dev/null)
 
     # Determine icon
     if [ "$MUTED" = "true" ] || [ "$VOL" -eq 0 ]; then
