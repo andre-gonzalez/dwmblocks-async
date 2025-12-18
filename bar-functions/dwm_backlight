@@ -6,13 +6,19 @@
 FLAG_FILE="/tmp/dwm_backlight_show"
 
 dwm_backlight() {
+	# Check if eDP-1 is connected and has an active resolution (is outputting)
+	if ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -q "connected" || \
+	   ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -qE "[0-9]+x[0-9]+\+"; then
+		exit 0
+	fi
+
 	ACTUAL=$(brightnessctl g)
 	MAX=$(brightnessctl m)
 	BRIGHT=$((ACTUAL * 100 / MAX))
 
 	if [ "$BRIGHT" -eq 100 ]; then
 		# printf "󰃠"
-		exit
+		exit 0
 	elif [ "$BRIGHT" -le 30 ]; then
 		printf "󰃞" "$BRIGHT"
 	elif [ "$BRIGHT" -le 50 ]; then
