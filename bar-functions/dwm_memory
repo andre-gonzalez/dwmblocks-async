@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# A dwm_bar function to display information regarding system memory
+# Based on dwm_resources by Joe Standring <git@joestandring.com>
+# GNU GPLv3
+
+dwm_memory () {
+	# Gather memory usage data
+	free_output=$(free | grep Mem)
+	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
+	# Convert KB to GB and round to whole number
+	MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
+	if [ "$MEMUSED_GB" -ge 1 ]; then
+		MEMUSED="${MEMUSED_GB}G"
+	else
+		# If less than 1GB, show in MB
+		MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
+		MEMUSED="${MEMUSED_MB}M"
+	fi
+
+	# Display the output
+	printf " %s\n" "$MEMUSED"
+}
+
+dwm_memory

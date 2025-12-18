@@ -25,7 +25,9 @@
 	X("",	"dwm_bluetooth", 60, 12) \ // 46
 	X("",	"dwm_systemd_networkd", 5,  0) \
 	X("",	"dwm_ufw",	60, 0) \
-	X("",	"dwm_resources", 5,  0) \
+	X("",	"dwm_storage", 5,  0) \
+	X("",	"dwm_memory", 5,  0) \
+	X("",	"dwm_cpu", 5,  0) \
 	X("",	"dwm_packages",	14400, 13) \
 	X("",	"dwm_battery", 300,  0) \
 	X("",	"dwm_pulse", 0, 10) \

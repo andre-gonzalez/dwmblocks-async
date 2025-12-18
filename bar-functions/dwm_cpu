@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# A dwm_bar function to display information regarding CPU utilization
+# Based on dwm_resources by Joe Standring <git@joestandring.com>
+# GNU GPLv3
+
+dwm_cpu () {
+	# Gather CPU usage
+	CPU=$(top -bn1 | awk '/Cpu/ {print int($2)}')%
+
+	# Display the output
+	printf " %s\n" "$CPU"
+}
+
+dwm_cpu
