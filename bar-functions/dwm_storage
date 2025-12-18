@@ -51,8 +51,12 @@ dwm_storage () {
 		fi
 	fi
 
-	# Display the output: /home usage and total disk percentage
-	printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
+	# Display the output: /home usage and total disk percentage (only if > 85%)
+	if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
+		printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
+	else
+		printf "󰋜 %s\n" "$HOME_USED"
+	fi
 
 	# Storage warning notification (check available space on root filesystem)
 	# Only trigger if AVAIL_GB is a valid positive integer less than 15
