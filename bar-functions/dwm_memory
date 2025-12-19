@@ -19,7 +19,8 @@ dwm_memory () {
 	fi
 
 	# Display the output
-	printf " %s\n" "$MEMUSED"
+	printf " %s\n" "$MEMUSED"
+
 }
 
 dwm_memory
