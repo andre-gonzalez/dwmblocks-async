@@ -20,12 +20,12 @@
 // To force update on one add 34 to the number
 #define BLOCKS(X)             \
 	X("",	"dwm_countdown", 1,  0) \
-	X("",	"dwm_vpn", 5,  0) \
+	X("",	"dwm_vpn", 10,  0) \
 	X("",	"dwm_spotify", 3,  0) \
 	X("",	"dwm_bluetooth", 60, 12) \
 	X("",	"dwm_systemd_networkd", 5,  0) \
 	X("",	"dwm_ufw",	60, 0) \
-	X("",	"dwm_storage", 5,  0) \
+	X("",	"dwm_storage", 14400,  0) \
 	X("",	"dwm_memory", 5,  0) \
 	X("",	"dwm_cpu", 5,  0) \
 	X("",	"dwm_packages",	14400, 13) \
