@@ -15,6 +15,11 @@ dwm_pulse() {
         exit 0
     fi
 
+    # Filter out Bluetooth sinks - dwm_bluetooth handles those
+    if echo "$DEFAULT_SINK" | grep -qi "bluez"; then
+        exit 0
+    fi
+
     # Get current volume and mute status
     # If volume retrieval fails, there's no usable sink
     if ! VOL=$(pamixer --get-volume 2>/dev/null) || [ -z "$VOL" ]; then
