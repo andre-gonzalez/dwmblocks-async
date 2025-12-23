@@ -6,10 +6,12 @@
 
 dwm_cpu () {
 	# Gather CPU usage
-	CPU=$(top -bn1 | awk '/Cpu/ {print int($2)}')%
+	CPU_NUM=$(top -bn1 | awk '/Cpu/ {print int($2)}')
 
-	# Display the output
-	printf " %s\n" "$CPU"
+	# Only display if CPU utilization is 20% or higher
+	if [ "$CPU_NUM" -ge 20 ]; then
+		printf " %s%%\n" "$CPU_NUM"
+	fi
 }
 
 dwm_cpu
