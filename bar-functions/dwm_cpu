@@ -24,13 +24,13 @@ dwm_cpu () {
 			fi
 		else
 			# Plugged in: print if CPU utilization is above 60%
-			if [ "$CPU_NUM" -ge 60 ]; then
+			if [ "$CPU_NUM" -ge 70 ]; then
 				printf " %s%%\n" "$CPU_NUM"
 			fi
 		fi
 	else
 		# Fallback: assume plugged in if battery status cannot be detected
-		if [ "$CPU_NUM" -ge 60 ]; then
+		if [ "$CPU_NUM" -ge 70 ]; then
 			printf " %s%%\n" "$CPU_NUM"
 		fi
 	fi
