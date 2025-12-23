@@ -8,18 +8,64 @@ dwm_memory () {
 	# Gather memory usage data
 	free_output=$(free | grep Mem)
 	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
-	# Convert KB to GB and round to whole number
-	MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
-	if [ "$MEMUSED_GB" -ge 1 ]; then
-		MEMUSED="${MEMUSED_GB}G"
-	else
-		# If less than 1GB, show in MB
-		MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
-		MEMUSED="${MEMUSED_MB}M"
+	MEMTOTAL_KB=$(echo $free_output | awk '{print $2}')
+	
+	# Calculate memory percentage
+	MEMPERCENT=$(echo "$MEMUSED_KB $MEMTOTAL_KB" | awk '{printf "%.0f", ($1/$2)*100}')
+	
+	# Check battery status (try BAT1 first, then BAT0)
+	BAT="BAT1"
+	if [ ! -f "/sys/class/power_supply/$BAT/status" ]; then
+		BAT="BAT0"
 	fi
 
-	# Display the output
-	printf " %s\n" "$MEMUSED"
+	# Determine if running on battery and apply appropriate threshold
+	if [ -f "/sys/class/power_supply/$BAT/status" ]; then
+		STATUS=$(cat /sys/class/power_supply/$BAT/status)
+		if [ "$STATUS" = "Discharging" ]; then
+			# On battery: print if memory utilization is above 15%
+			if [ "$MEMPERCENT" -gt 15 ]; then
+				# Convert KB to GB and round to whole number
+				MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
+				if [ "$MEMUSED_GB" -ge 1 ]; then
+					MEMUSED="${MEMUSED_GB}G"
+				else
+					# If less than 1GB, show in MB
+					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
+					MEMUSED="${MEMUSED_MB}M"
+				fi
+				printf " %s\n" "$MEMUSED"
+			fi
+		else
+			# Plugged in: print if memory utilization is above 75%
+			if [ "$MEMPERCENT" -gt 75 ]; then
+				# Convert KB to GB and round to whole number
+				MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
+				if [ "$MEMUSED_GB" -ge 1 ]; then
+					MEMUSED="${MEMUSED_GB}G"
+				else
+					# If less than 1GB, show in MB
+					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
+					MEMUSED="${MEMUSED_MB}M"
+				fi
+				printf " %s\n" "$MEMUSED"
+			fi
+		fi
+	else
+		# Fallback: assume plugged in if battery status cannot be detected
+		if [ "$MEMPERCENT" -gt 75 ]; then
+			# Convert KB to GB and round to whole number
+			MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
+			if [ "$MEMUSED_GB" -ge 1 ]; then
+				MEMUSED="${MEMUSED_GB}G"
+			else
+				# If less than 1GB, show in MB
+				MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
+				MEMUSED="${MEMUSED_MB}M"
+			fi
+			printf " %s\n" "$MEMUSED"
+		fi
+	fi
 
 }
 
