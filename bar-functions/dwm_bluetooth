@@ -1,7 +1,22 @@
 #!/bin/dash
+
+# Dependencies: pamixer
+
+FLAG_FILE="/tmp/dwm_volume_show"
+
 dwm_bluetooth () {
 		output=""
 		first=true
+
+		# Get default sink to check if it's a Bluetooth audio device
+		default_sink=""
+		if command -v pamixer >/dev/null 2>&1; then
+				default_sink=$(pamixer --get-default-sink 2>/dev/null)
+				# Filter out dummy and null sinks
+				if echo "$default_sink" | grep -qiE "(dummy|null)"; then
+						default_sink=""
+				fi
+		fi
 
 		# Get all connected devices - extract MAC addresses
 		devices=$(bluetoothctl devices Connected | awk '{print $2}')
@@ -19,6 +34,51 @@ dwm_bluetooth () {
 				battery=$(echo "$info" | grep 'Battery Percentage' | grep -oE '\([0-9]+\)' | grep -oE '[0-9]+')
 
 				if [ -n "$name" ]; then
+						# Check if this device is the active audio sink
+						is_audio_sink=false
+						audio_icon=""
+						audio_vol=""
+						
+						if [ -n "$default_sink" ] && command -v pamixer >/dev/null 2>&1; then
+								# Check if default sink is a Bluetooth sink and matches this device
+								# PulseAudio/PipeWire typically include device name or MAC in sink description
+								# First check if it's a Bluetooth sink (bluez prefix)
+								if echo "$default_sink" | grep -qi "bluez"; then
+										# Then check if sink name/description contains device name or MAC
+										name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
+										sink_lower=$(echo "$default_sink" | tr '[:upper:]' '[:lower:]')
+										if echo "$sink_lower" | grep -qF "$name_lower" || \
+											   echo "$sink_lower" | grep -qF "$(echo "$mac" | tr '[:upper:]' '[:lower:]')"; then
+												is_audio_sink=true
+										fi
+								fi
+								
+								if [ "$is_audio_sink" = "true" ]; then
+										
+										# Get volume and mute status
+										vol=$(pamixer --get-volume 2>/dev/null)
+										muted=$(pamixer --get-mute 2>/dev/null)
+										
+										if [ -n "$vol" ]; then
+												# Determine audio icon based on volume level
+												if [ "$muted" = "true" ] || [ "$vol" -eq 0 ]; then
+														audio_icon="󰸈"
+												elif [ "$vol" -le 33 ]; then
+														audio_icon="󰖀"
+												elif [ "$vol" -le 66 ]; then
+														audio_icon="󰕾"
+												else
+														audio_icon=""
+												fi
+												
+												# Show percentage if flag file exists
+												if [ -f "$FLAG_FILE" ]; then
+														audio_vol="$vol%"
+												fi
+										fi
+								fi
+						fi
+
 						# Format device name
 						if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
 								device_str="󰂰 XM3"
@@ -36,6 +96,14 @@ dwm_bluetooth () {
 								device_str="󰂰 $name"
 								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
 										device_str="$device_str $battery%"
+								fi
+						fi
+
+						# Add audio icon and volume if this is an audio sink
+						if [ "$is_audio_sink" = "true" ] && [ -n "$audio_icon" ]; then
+								device_str="$device_str $audio_icon"
+								if [ -n "$audio_vol" ]; then
+										device_str="$device_str $audio_vol"
 								fi
 						fi
 
