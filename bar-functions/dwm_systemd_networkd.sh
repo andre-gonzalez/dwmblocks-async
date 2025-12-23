@@ -8,6 +8,10 @@ if [ "$wired" = 1 ]; then
     echo ""
 elif [ "$status" = "connected" ]; then
 		network=$(iwctl station wlan0 show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')
+		if [ "$network" = "Davi" ]; then
+			echo ""
+			exit 0
+		fi
 		strength=$(iw dev "$interface" link | awk '/signal/ {gsub("-",""); print $2}')
 		if [ "$strength" -ge 80 ]; then
 			echo "󰤨"" $network"
