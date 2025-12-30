@@ -6,10 +6,10 @@ CHARGE=$(cat /sys/class/power_supply/$BAT/capacity)
 STATUS=$(cat /sys/class/power_supply/$BAT/status)
 
 # Determine icon based on charge percentage
-if [ "$CHARGE" -ge 98 ] && [ "$STATUS" != "Discharging" ]; then
+if [ "$CHARGE" -ge 97 ] && [ "$STATUS" != "Discharging" ]; then
 	# Do not print anything if charged and not discharging
 	exit
-elif [ "$CHARGE" -ge 98 ]; then
+elif [ "$CHARGE" -ge 97 ]; then
 	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
 	ICON=" $CHARGE"
@@ -17,7 +17,7 @@ elif [ "$CHARGE" -le 40 ]; then
 	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 60 ]; then
 	ICON=""
-elif [ "$CHARGE" -le 97 ]; then
+elif [ "$CHARGE" -le 96 ]; then
 	ICON=""
 else
 	ICON="?"
