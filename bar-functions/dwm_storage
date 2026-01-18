@@ -7,17 +7,17 @@
 dwm_storage () {
 	# Calculate actual space used by /home directory
 	HOME_USED=$(du -sh /home 2>/dev/null | awk '{print $1}')
-	
+
 	# Convert HOME_USED to GB for comparison
 	# Parse the human-readable format (e.g., "50G", "1.2T", "500M") and convert to GB
 	HOME_USED_GB=$(echo "$HOME_USED" | awk '{
 		# Extract numeric value (remove all non-numeric except decimal point)
 		value = $0
 		gsub(/[^0-9.]/, "", value)
-		
+
 		# Extract unit (get last character, convert to uppercase)
 		unit = toupper(substr($0, length($0)))
-		
+
 		if (value != "" && (unit == "K" || unit == "M" || unit == "G" || unit == "T")) {
 			if (unit == "K") gb = value / 1024 / 1024
 			else if (unit == "M") gb = value / 1024
@@ -73,12 +73,12 @@ dwm_storage () {
 	fi
 
 	# Display the output based on conditions:
-	# - If HOME_USED < 100GB: don't print home usage
+	# - If HOME_USED < 150GB: don't print home usage
 	#   - If DISK_PERCENT > 85%: print only disk percentage
 	#   - If DISK_PERCENT <= 85%: print nothing
-	# - If HOME_USED >= 100GB: print home usage (and disk percentage if > 85%)
-	HOME_LESS_THAN_100GB=$(echo "$HOME_USED_GB" | awk '{if ($1 < 100 && $1 > 0) print "1"; else print "0"}')
-	if [ -n "$HOME_USED_GB" ] && [ "$HOME_LESS_THAN_100GB" = "1" ]; then
+	# - If HOME_USED >= 150GB: print home usage (and disk percentage if > 85%)
+	HOME_LESS_THAN_150GB=$(echo "$HOME_USED_GB" | awk '{if ($1 < 150 && $1 > 0) print "1"; else print "0"}')
+	if [ -n "$HOME_USED_GB" ] && [ "$HOME_LESS_THAN_150GB" = "1" ]; then
 		# Home usage is less than 100GB
 		if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
 			# Only print disk percentage if > 85%
