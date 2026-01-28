@@ -20,14 +20,14 @@ dwm_bluetooth () {
 
 		# Get all connected devices - extract MAC addresses
 		devices=$(bluetoothctl devices Connected | awk '{print $2}')
-		
+
 		# Process each MAC address
 		for mac in $devices; do
 				# Skip empty MAC addresses
 				if [ -z "$mac" ]; then
 						continue
 				fi
-				
+
 				# Get device info for this MAC address
 				info=$(bluetoothctl info "$mac" 2>/dev/null)
 				name=$(echo "$info" | grep 'Name' | cut -d : -f 2 | xargs)
@@ -38,7 +38,7 @@ dwm_bluetooth () {
 						is_audio_sink=false
 						audio_icon=""
 						audio_vol=""
-						
+
 						if [ -n "$default_sink" ] && command -v pamixer >/dev/null 2>&1; then
 								# Check if default sink is a Bluetooth sink and matches this device
 								# PulseAudio/PipeWire typically include device name or MAC in sink description
@@ -52,13 +52,13 @@ dwm_bluetooth () {
 												is_audio_sink=true
 										fi
 								fi
-								
+
 								if [ "$is_audio_sink" = "true" ]; then
-										
+
 										# Get volume and mute status
 										vol=$(pamixer --get-volume 2>/dev/null)
 										muted=$(pamixer --get-mute 2>/dev/null)
-										
+
 										if [ -n "$vol" ]; then
 												# Determine audio icon based on volume level
 												if [ "$muted" = "true" ] || [ "$vol" -eq 0 ]; then
@@ -70,7 +70,7 @@ dwm_bluetooth () {
 												else
 														audio_icon=""
 												fi
-												
+
 												# Show percentage if flag file exists
 												if [ -f "$FLAG_FILE" ]; then
 														audio_vol="$vol%"
@@ -81,12 +81,12 @@ dwm_bluetooth () {
 
 						# Format device name
 						if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
-								device_str="󰂰 XM3"
+								device_str="XM3"
 								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
 										device_str="$device_str $battery%"
 								fi
 						elif [ "$name" = "Jabra Elite 3" ]; then
-								device_str="󰂰 Jabra"
+								device_str="Jabra"
 								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
 										device_str="$device_str $battery%"
 								fi
