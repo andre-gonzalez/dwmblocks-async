@@ -6,3 +6,5 @@ if [ "$cupd" -gt 100 ]; then
 else
 	printf ""
 fi
+
+checkupdates -d
