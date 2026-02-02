@@ -1,8 +1,8 @@
 #!/bin/sh
 
 dwm_date () {
-        printf "%s" "$(date "+%a %d %R")"
-        # printf "%s" "$(date "+%d · %R")"
+        d=$(date "+%a %d %R")
+        printf "%.2s%s" "$d" "${d#???}"
 }
 
 dwm_date
