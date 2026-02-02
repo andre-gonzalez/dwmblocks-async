@@ -9,16 +9,11 @@
 
 # Change the value of CURRENCY to match your currency code
 dwm_currency() {
-	CURRENCY1=MXN
+	CURRENCY1=USD
 	CURRENCY2=BRL
 
-	printf "%s" "$SEP1"
-	if [ "$IDENTIFIER" = "unicode" ]; then
-		printf "%s" " R\$$(curl -s $CURRENCY1rate.sx/1$CURRENCY2)"
-	else
-		printf "%s %.5s" "  R\$" "$(curl -s $CURRENCY1.rate.sx/1$CURRENCY2)"
-	fi
-	printf "%s\n" "$SEP2"
+	RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
+	printf "  %s" "$RATE"
 }
 
 dwm_currency
