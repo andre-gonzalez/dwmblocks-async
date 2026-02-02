@@ -19,7 +19,7 @@
 // Define blocks for the status feed as X(icon, cmd, interval, signal).
 // To force update on one add 34 to the number
 #define BLOCKS(X)             \
-	X("",	"dwm_currency", 7200,  0) \
+	X("",	"dwm_currency", 7200,  1) \
 	X("",	"dwm_countdown", 1,  0) \
 	X("",	"dwm_vpn", 10,  0) \
 	X("",	"dwm_systemd_networkd", 5,  0) \
