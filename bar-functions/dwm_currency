@@ -23,4 +23,18 @@ dwm_currency() {
 	fi
 }
 
-dwm_currency
+
+work_hours() {
+	day_of_week=$(date +%A)
+	hour=$(date +%H)
+
+	for x in Monday Tuesday Wednesday Thursday Friday; do
+		if [ "$x" = "$day_of_week" ]; then
+			if [ "$hour" -ge 8 ] && [ "$hour" -lt 17 ]; then
+				dwm_currency
+			fi
+		fi
+	done
+}
+
+work_hours
