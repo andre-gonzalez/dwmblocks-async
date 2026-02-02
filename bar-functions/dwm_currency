@@ -8,12 +8,19 @@
 # Dependencies: curl
 
 # Change the value of CURRENCY to match your currency code
-dwm_currency() {
-	CURRENCY1=USD
-	CURRENCY2=BRL
+ENABLED=1
 
-	RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
-	printf "  %s" "$RATE"
+dwm_currency() {
+	if [ "$ENABLED" = 1 ]; then
+
+		CURRENCY1=USD
+		CURRENCY2=BRL
+
+		RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
+		printf " %s" "$RATE"
+	else
+		exit
+	fi
 }
 
 dwm_currency
