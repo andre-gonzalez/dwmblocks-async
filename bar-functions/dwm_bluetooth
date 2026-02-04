@@ -91,7 +91,7 @@ dwm_bluetooth () {
 										device_str="$device_str $battery%"
 								fi
 						elif [ "$name" = "Mi Bluetooth Speaker" ]; then
-								device_str="󰂰 Speaker"
+								device_str="󰂰 Mi"
 						else
 								device_str="󰂰 $name"
 								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
