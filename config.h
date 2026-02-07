@@ -19,6 +19,7 @@
 // Define blocks for the status feed as X(icon, cmd, interval, signal).
 // To force update on one add 34 to the number
 #define BLOCKS(X)             \
+	X("",	"dwm_spotify", 3,  0) \
 	X("",	"dwm_currency", 1800,  1) \
 	X("",	"dwm_countdown", 1,  0) \
 	X("",	"dwm_vpn", 10,  0) \
@@ -29,7 +30,6 @@
 	X("",	"dwm_cpu", 5,  0) \
 	X("",	"dwm_packages",	14400, 13) \
 	X("",	"dwm_battery", 300,  0) \
-	X("",	"dwm_spotify", 3,  0) \
 	X("",	"dwm_bluetooth", 60, 12) \
 	X("",	"dwm_pulse", 0, 10) \
 	X("",	"dwm_backlight", 0, 11) \
