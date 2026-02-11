@@ -7,4 +7,10 @@ else
 	printf ""
 fi
 
-checkupdates -d
+# Skip downloading updates on metered connections or on "Lopes" Wi-Fi
+network=$(iwctl station wlan0 show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')
+metered=$(networkctl status | grep -c 'metered')
+
+if [ "$network" != "Lopes" ] && [ "$metered" -eq 0 ]; then
+	checkupdates -d
+fi
