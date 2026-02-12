@@ -9,15 +9,17 @@
 
 # Change the value of CURRENCY to match your currency code
 ENABLED=1
+TARGET=5.2744
+
+CURRENCY1=USD
+CURRENCY2=BRL
 
 dwm_currency() {
 	if [ "$ENABLED" = 1 ]; then
 
-		CURRENCY1=USD
-		CURRENCY2=BRL
 
 		RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
-		printf " %s" "$RATE"
+		printf " %s" "$(awk "BEGIN {printf \"%.2f (%.2f%%)\", $RATE, (1 - $RATE / $TARGET) * 100}")"
 	else
 		exit
 	fi
