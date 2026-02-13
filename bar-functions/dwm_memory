@@ -5,6 +5,12 @@
 # GNU GPLv3
 
 dwm_memory () {
+	# Handle click actions
+	case "$BLOCK_BUTTON" in
+		1) st -e tmux new-session -A -s btop btop & exit 0 ;;
+		3) notify-send "Top Memory Processes" "$(ps axo pid,comm,%mem --sort=-%mem | head -n 6)" ; exit 0 ;;
+	esac
+
 	# Gather memory usage data
 	free_output=$(free | grep Mem)
 	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
@@ -34,7 +40,7 @@ dwm_memory () {
 					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
 					MEMUSED="${MEMUSED_MB}M"
 				fi
-				printf " %s\n" "$MEMUSED"
+				printf " %s\n" "$MEMUSED"
 			fi
 		else
 			# Plugged in: print if memory utilization is above 75%
@@ -48,7 +54,7 @@ dwm_memory () {
 					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
 					MEMUSED="${MEMUSED_MB}M"
 				fi
-				printf " %s\n" "$MEMUSED"
+				printf " %s\n" "$MEMUSED"
 			fi
 		fi
 	else
@@ -63,7 +69,7 @@ dwm_memory () {
 				MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
 				MEMUSED="${MEMUSED_MB}M"
 			fi
-			printf " %s\n" "$MEMUSED"
+			printf " %s\n" "$MEMUSED"
 		fi
 	fi
 

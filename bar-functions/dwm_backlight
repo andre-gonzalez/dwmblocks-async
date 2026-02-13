@@ -6,6 +6,13 @@
 FLAG_FILE="/tmp/dwm_backlight_show"
 
 dwm_backlight() {
+	# Handle click actions
+	case "$BLOCK_BUTTON" in
+		1) brightnessctl set 50% ; exit 0 ;;
+		4) brightnessctl set +5% ; exit 0 ;;
+		5) brightnessctl set 5%- ; exit 0 ;;
+	esac
+
 	# Check if eDP-1 is connected and has an active resolution (is outputting)
 	if ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -q "connected" || \
 	   ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -qE "[0-9]+x[0-9]+\+"; then
@@ -20,13 +27,13 @@ dwm_backlight() {
 		# printf "󰃠"
 		exit 0
 	elif [ "$BRIGHT" -le 30 ]; then
-		printf "󰃞" "$BRIGHT"
+		ICON="󰃞"
 	elif [ "$BRIGHT" -le 50 ]; then
-		printf "󰃝"
+		ICON="󰃝"
 	elif [ "$BRIGHT" -le 99 ]; then
-		printf "󰃟"
+		ICON="󰃟"
 	else
-		ICON "󰖨"
+		ICON="󰖨"
 	fi
 
 	# Show percentage if flag file exists

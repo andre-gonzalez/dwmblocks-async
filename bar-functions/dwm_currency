@@ -14,12 +14,30 @@ TARGET=5.2744
 CURRENCY1=USD
 CURRENCY2=BRL
 
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1)
+		RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
+		if [ -n "$RATE" ]; then
+			DETAIL=$(awk "BEGIN {printf \"1 $CURRENCY1 = %.4f $CURRENCY2\n1 $CURRENCY2 = %.4f $CURRENCY1\nTarget: $TARGET\nDiff: %.2f%%\", $RATE, 1/$RATE, (1 - $RATE / $TARGET) * 100}")
+			notify-send "Exchange Rate" "$DETAIL"
+		else
+			notify-send "Exchange Rate" "Failed to fetch rate"
+		fi
+		exit 0
+		;;
+	3)
+		xdg-open "https://www.google.com/finance/quote/$CURRENCY1-$CURRENCY2" &
+		exit 0
+		;;
+esac
+
 dwm_currency() {
 	if [ "$ENABLED" = 1 ]; then
 
 
 		RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
-		printf " %s" "$(awk "BEGIN {printf \"%.2f (%.2f%%)\", $RATE, (1 - $RATE / $TARGET) * 100}")"
+		printf " %s" "$(awk "BEGIN {printf \"%.2f (%.2f%%)\", $RATE, (1 - $RATE / $TARGET) * 100}")"
 	else
 		exit
 	fi

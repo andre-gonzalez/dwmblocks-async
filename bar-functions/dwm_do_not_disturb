@@ -2,11 +2,32 @@
 
 END_FILE="$HOME/.cache/do-not-disturb-end"
 
+# Handle click actions
+case "$BLOCK_BUTTON" in
+    1)
+        dunstctl set-paused toggle
+        # If turning off DND, remove any timer file
+        if [ "$(dunstctl is-paused)" = "false" ]; then
+            rm -f "$END_FILE"
+        fi
+        pkill -RTMIN+14 dwmblocks
+        exit 0
+        ;;
+    3)
+        # Set DND for 1 hour
+        dunstctl set-paused true
+        echo "$(( $(date +%s) + 3600 ))" > "$END_FILE"
+        pkill -RTMIN+14 dwmblocks
+        notify-send "Do Not Disturb" "Enabled for 1 hour"
+        exit 0
+        ;;
+esac
+
 disturb() {
     status="$(dunstctl is-paused)"
 
     if [ "$status" = "false" ]; then
-        # echo ""
+        # echo ""
         exit 0
     fi
 
@@ -19,14 +40,14 @@ disturb() {
 
         # In case timestamp is invalid or expired
         if [ -z "$end_time" ]; then
-            echo ""
+            echo ""
             exit 0
         fi
 
-        echo " $end_time"
+        echo " $end_time"
     else
         # No timer set: just show icon
-        echo ""
+        echo ""
     fi
 }
 

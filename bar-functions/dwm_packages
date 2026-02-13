@@ -1,8 +1,14 @@
 #!/bin/sh
 
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1) st -e tmux new-session -A -s update sudo pacman -Syu & exit 0 ;;
+	3) notify-send "Available Updates" "$(checkupdates | head -n 20)" ; exit 0 ;;
+esac
+
 cupd=$(checkupdates | wc -l)
 if [ "$cupd" -gt 100 ]; then
-	printf " %s\n" "$cupd"
+	printf " %s\n" "$cupd"
 else
 	printf ""
 fi

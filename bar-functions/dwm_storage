@@ -4,6 +4,12 @@
 # Based on dwm_resources by Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1) notify-send "Disk Usage" "$(df -h --output=target,size,used,avail,pcent -x tmpfs -x devtmpfs | head -n 10)" ; exit 0 ;;
+	3) st -e tmux new-session -A -s ncdu ncdu / & exit 0 ;;
+esac
+
 dwm_storage () {
 	# Calculate actual space used by /home directory
 	HOME_USED=$(du -sh /home 2>/dev/null | awk '{print $1}')
@@ -82,13 +88,13 @@ dwm_storage () {
 		# Home usage is less than 100GB
 		if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
 			# Only print disk percentage if > 85%
-			printf " %s%%\n" "$DISK_PERCENT"
+			printf " %s%%\n" "$DISK_PERCENT"
 		fi
 		# Otherwise print nothing
 	else
 		# Home usage is >= 100GB, keep original behavior
 		if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
-			printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
+			printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
 		else
 			printf "󰋜 %s\n" "$HOME_USED"
 		fi

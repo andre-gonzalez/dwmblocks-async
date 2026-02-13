@@ -18,6 +18,15 @@ dwm_spotify () {
     fi
 
     if [ "$PLAYER" = "spotify" ] || [ "$PLAYER" = "spotifyd" ] || [ "$PLAYER" = "spotify_player" ]; then
+        # Handle click actions
+        case "$BLOCK_BUTTON" in
+            1) playerctl play-pause ; exit 0 ;;
+            2) spotify & exit 0 ;;
+            3) playerctl next ; exit 0 ;;
+            4) playerctl next ; exit 0 ;;
+            5) playerctl previous ; exit 0 ;;
+        esac
+
         STATUS=$(playerctl metadata --format "{{status}}")
 		ARTIST=$(playerctl metadata --format "{{artist}}")
 		TITLE=$(playerctl metadata --format "{{title}}")
@@ -25,7 +34,7 @@ dwm_spotify () {
 			if [ "$STATUS" = "Playing" ]; then
 				STATUS="▶"
 			else
-				STATUS=""
+				STATUS=""
 			fi
 
 
