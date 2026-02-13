@@ -5,14 +5,6 @@
 FLAG_FILE="/tmp/dwm_volume_show"
 
 dwm_bluetooth () {
-		# Handle click actions
-		case "$BLOCK_BUTTON" in
-			1) st -e tmux new-session -A -s bluetooth bluetoothctl & exit 0 ;;
-			3) bluetoothctl disconnect & exit 0 ;;
-			4) pamixer -i 5 ; exit 0 ;;
-			5) pamixer -d 5 ; exit 0 ;;
-		esac
-
 		output=""
 		first=true
 
@@ -76,7 +68,7 @@ dwm_bluetooth () {
 												elif [ "$vol" -le 66 ]; then
 														audio_icon="󰕾"
 												else
-														audio_icon=""
+														audio_icon=""
 												fi
 
 												# Show percentage if flag file exists

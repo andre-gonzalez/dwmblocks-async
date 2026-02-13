@@ -5,14 +5,6 @@
 FLAG_FILE="/tmp/dwm_volume_show"
 
 dwm_pulse() {
-    # Handle click actions
-    case "$BLOCK_BUTTON" in
-        1) pamixer -t ; exit 0 ;;
-        3) st -e tmux new-session -A -s pulsemixer pulsemixer & exit 0 ;;
-        4) pamixer -i 5 ; exit 0 ;;
-        5) pamixer -d 5 ; exit 0 ;;
-    esac
-
     # Check if there is a default sink available
     if ! DEFAULT_SINK=$(pamixer --get-default-sink 2>/dev/null) || [ -z "$DEFAULT_SINK" ]; then
         exit 0
@@ -43,7 +35,7 @@ dwm_pulse() {
     elif [ "$VOL" -le 66 ]; then
         ICON="󰕾"
     else
-        ICON=""
+        ICON=""
     fi
 
     # Show percentage only if flag file exists

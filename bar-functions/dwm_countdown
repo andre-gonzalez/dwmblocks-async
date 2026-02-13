@@ -6,20 +6,6 @@
 
 # Dependencies: https://github.com/joestandring/countdown
 
-# Handle click actions
-case "$BLOCK_BUTTON" in
-    1)
-        # Cancel the countdown by removing its temp file
-        for f in /tmp/countdown.*; do
-            if [ -e "$f" ]; then
-                rm -f "$f"
-                notify-send "Countdown" "Cancelled"
-            fi
-        done
-        exit 0
-        ;;
-esac
-
 dwm_countdown () {
     for f in /tmp/countdown.*; do
         if [ -e "$f" ]; then

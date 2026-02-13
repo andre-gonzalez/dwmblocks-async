@@ -5,12 +5,6 @@
 # GNU GPLv3
 
 dwm_cpu () {
-	# Handle click actions
-	case "$BLOCK_BUTTON" in
-		1) st -e tmux new-session -A -s btop btop & exit 0 ;;
-		3) notify-send "Top CPU Processes" "$(ps axo pid,comm,%cpu --sort=-%cpu | head -n 6)" ; exit 0 ;;
-	esac
-
 	# Gather CPU usage
 	CPU_NUM=$(top -bn1 | awk '/Cpu/ {print int($2)}')
 
@@ -26,18 +20,18 @@ dwm_cpu () {
 		if [ "$STATUS" = "Discharging" ]; then
 			# On battery: print if CPU utilization is above 20%
 			if [ "$CPU_NUM" -ge 20 ]; then
-				printf " %s%%\n" "$CPU_NUM"
+				printf " %s%%\n" "$CPU_NUM"
 			fi
 		else
 			# Plugged in: print if CPU utilization is above 60%
 			if [ "$CPU_NUM" -ge 70 ]; then
-				printf " %s%%\n" "$CPU_NUM"
+				printf " %s%%\n" "$CPU_NUM"
 			fi
 		fi
 	else
 		# Fallback: assume plugged in if battery status cannot be detected
 		if [ "$CPU_NUM" -ge 70 ]; then
-			printf " %s%%\n" "$CPU_NUM"
+			printf " %s%%\n" "$CPU_NUM"
 		fi
 	fi
 }

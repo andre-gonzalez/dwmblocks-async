@@ -2,39 +2,6 @@
 
 # Change BAT1 to whatever your battery is identified as. Typically BAT0 or BAT1
 BAT="BAT1"
-if [ ! -f "/sys/class/power_supply/$BAT/capacity" ]; then
-	BAT="BAT0"
-fi
-
-# Handle click actions
-case "$BLOCK_BUTTON" in
-	1)
-		CHARGE=$(cat /sys/class/power_supply/$BAT/capacity)
-		STATUS=$(cat /sys/class/power_supply/$BAT/status)
-		ENERGY_NOW=$(cat /sys/class/power_supply/$BAT/energy_now 2>/dev/null)
-		ENERGY_FULL=$(cat /sys/class/power_supply/$BAT/energy_full 2>/dev/null)
-		POWER_NOW=$(cat /sys/class/power_supply/$BAT/power_now 2>/dev/null)
-		WATTS=""
-		TIME_LEFT=""
-		if [ -n "$POWER_NOW" ] && [ "$POWER_NOW" -gt 0 ] 2>/dev/null; then
-			WATTS=$(awk "BEGIN {printf \"%.1f\", $POWER_NOW / 1000000}")
-			if [ "$STATUS" = "Discharging" ] && [ -n "$ENERGY_NOW" ]; then
-				HOURS=$(awk "BEGIN {printf \"%.1f\", $ENERGY_NOW / $POWER_NOW}")
-				TIME_LEFT="Time left: ${HOURS}h"
-			elif [ "$STATUS" = "Charging" ] && [ -n "$ENERGY_NOW" ] && [ -n "$ENERGY_FULL" ]; then
-				REMAINING=$((ENERGY_FULL - ENERGY_NOW))
-				HOURS=$(awk "BEGIN {printf \"%.1f\", $REMAINING / $POWER_NOW}")
-				TIME_LEFT="Time to full: ${HOURS}h"
-			fi
-		fi
-		MSG="Status: $STATUS\nCharge: ${CHARGE}%"
-		[ -n "$WATTS" ] && MSG="$MSG\nPower: ${WATTS}W"
-		[ -n "$TIME_LEFT" ] && MSG="$MSG\n$TIME_LEFT"
-		notify-send "Battery" "$MSG"
-		exit 0
-		;;
-esac
-
 CHARGE=$(cat /sys/class/power_supply/$BAT/capacity)
 STATUS=$(cat /sys/class/power_supply/$BAT/status)
 
@@ -43,15 +10,15 @@ if [ "$CHARGE" -ge 97 ] && [ "$STATUS" != "Discharging" ]; then
 	# Do not print anything if charged and not discharging
 	exit
 elif [ "$CHARGE" -ge 97 ]; then
-	ICON=""
+	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
-	ICON=" $CHARGE"
+	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 40 ]; then
-	ICON=" $CHARGE"
+	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 60 ]; then
-	ICON=""
+	ICON=""
 elif [ "$CHARGE" -le 96 ]; then
-	ICON=""
+	ICON=""
 else
 	ICON="?"
 fi

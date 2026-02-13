@@ -1,12 +1,6 @@
 #!/bin/sh
 
 dwm_date () {
-        # Handle click actions
-        case "$BLOCK_BUTTON" in
-            1) notify-send "$(date '+%A, %B %d, %Y')" "$(cal)" ; exit 0 ;;
-            3) date '+%Y-%m-%d %H:%M:%S' | xclip -selection clipboard && notify-send "Date copied to clipboard" ; exit 0 ;;
-        esac
-
         d=$(date "+%a %d %R")
         printf "%.2s%s" "$d" "${d#???}"
 }
