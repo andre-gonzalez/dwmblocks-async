@@ -8,7 +8,7 @@ if [ "$wired" = 1 ]; then
     echo ""
 elif [ "$status" = "connected" ]; then
 		network=$(iwctl station wlan0 show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')
-		if [ "$network" = "Davi" ]; then
+		if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ]; then
 			echo ""
 			exit 0
 		fi
