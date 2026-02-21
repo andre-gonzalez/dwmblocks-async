@@ -5,14 +5,21 @@
 # GNU GPLv3
 
 dwm_memory () {
+
+	# Handle click actions
+	case "$BLOCK_BUTTON" in
+		1) st -e tmux new-session -A -s btop_memory btop -p 4 ;;
+		3) notify-send "Top Memory Processes" "$(ps axo pid,comm,%mem --sort=-%mem | head -n 6)" ;;
+	esac
+
 	# Gather memory usage data
 	free_output=$(free | grep Mem)
 	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
 	MEMTOTAL_KB=$(echo $free_output | awk '{print $2}')
-	
+
 	# Calculate memory percentage
 	MEMPERCENT=$(echo "$MEMUSED_KB $MEMTOTAL_KB" | awk '{printf "%.0f", ($1/$2)*100}')
-	
+
 	# Check battery status (try BAT1 first, then BAT0)
 	BAT="BAT1"
 	if [ ! -f "/sys/class/power_supply/$BAT/status" ]; then
