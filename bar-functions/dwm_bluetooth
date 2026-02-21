@@ -5,6 +5,15 @@
 FLAG_FILE="/tmp/dwm_volume_show"
 
 dwm_bluetooth () {
+
+		Handle click actions
+		case "$BLOCK_BUTTON" in
+			1) st -e tmux new-session -A -s bluetooth bluetoothctl ;; # Left Click
+			3) bluetoothctl disconnect ;; # Right click
+			4) pamixer -i 5 ;; # Scroll Wheel up
+			5) pamixer -d 5 ;; # Scroll Wheel down
+		esac
+
 		output=""
 		first=true
 
