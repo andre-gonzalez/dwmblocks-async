@@ -6,9 +6,31 @@
 FLAG_FILE="/tmp/dwm_backlight_show"
 
 dwm_backlight() {
+
+	case "$BLOCK_BUTTON" in
+	1) # Left Click
+		brightnessctl set 50% >/dev/null 2>&1
+		touch /tmp/dwm_backlight_show
+		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		kill -45 $(pidof dwmblocks)
+		;;
+	4) # Scroll Wheel up
+		brightnessctl set +5% >/dev/null 2>&1
+		touch /tmp/dwm_backlight_show
+		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		kill -45 $(pidof dwmblocks)
+		;;
+	5) # Scroll Wheel down
+		brightnessctl set 5%- >/dev/null 2>&1
+		touch /tmp/dwm_backlight_show
+		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		kill -45 $(pidof dwmblocks)
+		;;
+	esac
+
 	# Check if eDP-1 is connected and has an active resolution (is outputting)
-	if ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -q "connected" || \
-	   ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -qE "[0-9]+x[0-9]+\+"; then
+	if ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -q "connected" ||
+		! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -qE "[0-9]+x[0-9]+\+"; then
 		exit 0
 	fi
 
@@ -26,14 +48,14 @@ dwm_backlight() {
 	elif [ "$BRIGHT" -le 99 ]; then
 		printf "󰃟"
 	else
-		ICON "󰖨"
+		printf "󰖨"
 	fi
 
 	# Show percentage if flag file exists
 	if [ -f "$FLAG_FILE" ]; then
-		printf "%s %d%%\n" "$ICON" "$BRIGHT"
+		printf " %d%%\n" "$BRIGHT"
 	else
-		printf "%s\n" "$ICON"
+		printf "%s\n"
 	fi
 }
 
