@@ -4,6 +4,12 @@
 # Based on dwm_resources by Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1) notify-send "Disk Usage" "$(df -h --output=target,size,used,avail,pcent -x tmpfs -x devtmpfs | head -n 10)" ;;
+	3) st -e tmux new-session -A -s ncdu sh -c 'limpar-disco; ncdu /' ;;
+esac
+
 dwm_storage () {
 	# Calculate actual space used by /home directory
 	HOME_USED=$(du -sh /home 2>/dev/null | awk '{print $1}')
