@@ -19,21 +19,21 @@
 // Define blocks for the status feed as X(icon, cmd, interval, signal).
 // To force update on one add 34 to the number
 #define BLOCKS(X)             \
-	X("",	"dwm_spotify", 3,  0) \
+	X("",	"dwm_spotify", 3,  2) \
 	X("",	"dwm_currency", 1800,  1) \
-	X("",	"dwm_countdown", 1,  0) \
-	X("",	"dwm_vpn", 10,  0) \
-	X("",	"dwm_systemd_networkd", 5,  0) \
-	X("",	"dwm_ufw",	60, 0) \
-	X("",	"dwm_storage", 14400,  0) \
-	X("",	"dwm_memory", 5,  0) \
-	X("",	"dwm_cpu", 5,  0) \
+	X("",	"dwm_countdown", 1,  3) \
+	X("",	"dwm_vpn", 10,  4) \
+	X("",	"dwm_systemd_networkd", 5,  5) \
+	X("",	"dwm_ufw",	60, 6) \
+	X("",	"dwm_storage", 14400,  7) \
+	X("",	"dwm_memory", 5,  8) \
+	X("",	"dwm_cpu", 5,  9) \
 	X("",	"dwm_packages",	14400, 13) \
-	X("",	"dwm_battery", 300,  0) \
+	X("",	"dwm_battery", 300,  15) \
 	X("",	"dwm_bluetooth", 60, 12) \
 	X("",	"dwm_pulse", 0, 10) \
 	X("",	"dwm_backlight", 0, 11) \
 	X("",	"dwm_do_not_disturb", 0,  14) \
-	X("",	"dwm_date", 30,  0) \
+	X("",	"dwm_date", 30,  16) \
 
 #endif  // CONFIG_H
