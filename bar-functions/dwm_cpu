@@ -5,6 +5,13 @@
 # GNU GPLv3
 
 dwm_cpu () {
+
+	# Handle click actions
+	case "$BLOCK_BUTTON" in
+		1) st -e tmux new-session -A -s btop_cpu btop -p 1 & exit 0 ;;
+		3) notify-send "Top CPU Processes" "$(ps axo pid,comm,%cpu --sort=-%cpu | head -n 6)" ; exit 0 ;;
+	esac
+
 	# Gather CPU usage
 	CPU_NUM=$(top -bn1 | awk '/Cpu/ {print int($2)}')
 
