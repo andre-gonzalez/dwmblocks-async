@@ -15,27 +15,48 @@ interface=$(ip addr | awk '/state UP/ {gsub(":","");print $2}' | grep -v 'virbr0
 status=$(iwctl station $interface show | grep State | grep -o 'connected\|disconnected')
 wired=$(ip -s link show | grep '^[0-9]: enp' | grep -c 'state UP')
 
+no_con=""
+if ! ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
+	no_con=" 󰈂"
+fi
+
 if [ "$wired" = 1 ]; then
-    echo ""
+    echo "$no_con"
 elif [ "$status" = "connected" ]; then
 		network=$(iwctl station wlan0 show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')
-		if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ]; then
-			echo ""
-			exit 0
-		fi
 		strength=$(iw dev "$interface" link | awk '/signal/ {gsub("-",""); print $2}')
-		if [ "$strength" -ge 80 ]; then
-			echo "󰤨"" $network"
-		elif [ "$strength" -le 20 ]; then
-			echo "󰤯"" $network"
-		elif [ "$strength" -le 40 ]; then
-			echo "󰤟"" $network"
-		elif [ "$strength" -le 60 ]; then
-			echo "󰤢"" $network"
-		elif [ "$strength" -le 80 ]; then
-			echo "󰤥"" $network"
+		if [ -n "$no_con" ]; then
+			if [ "$strength" -ge 80 ]; then
+				echo "󰤩"" $network"
+			elif [ "$strength" -le 20 ]; then
+				echo "󰤫"" $network"
+			elif [ "$strength" -le 40 ]; then
+				echo "󰤠"" $network"
+			elif [ "$strength" -le 60 ]; then
+				echo "󰤣"" $network"
+			elif [ "$strength" -le 80 ]; then
+				echo "󰤦"" $network"
+			else
+				echo "󰤠"" $network"
+			fi
 		else
-			echo "󰤠"" $network"
+			if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ]; then
+				echo "$no_con"
+				exit 0
+			fi
+			if [ "$strength" -ge 80 ]; then
+				echo "󰤨"" $network"
+			elif [ "$strength" -le 20 ]; then
+				echo "󰤯"" $network"
+			elif [ "$strength" -le 40 ]; then
+				echo "󰤟"" $network"
+			elif [ "$strength" -le 60 ]; then
+				echo "󰤢"" $network"
+			elif [ "$strength" -le 80 ]; then
+				echo "󰤥"" $network"
+			else
+				echo "󰤠"" $network"
+			fi
 		fi
 else
 	echo "󰤭"
