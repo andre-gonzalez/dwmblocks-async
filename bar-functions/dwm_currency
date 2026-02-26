@@ -9,7 +9,9 @@
 
 # Change the value of CURRENCY to match your currency code
 ENABLED=1
-TARGET=5.2540
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+. "$SCRIPT_DIR/dwm_currency.conf"
 
 
 CURRENCY1=USD
@@ -42,6 +44,7 @@ dwm_currency() {
 	fi
 }
 
+dwm_currency
 
 work_hours() {
 	day_of_week=$(date +%A)

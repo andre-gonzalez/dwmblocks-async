@@ -1,3 +1,4 @@
 build/
 .cache/
 compile_commands.json
+bar-functions/dwm_currency.conf
