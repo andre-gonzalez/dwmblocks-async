@@ -27,7 +27,7 @@ case "$BLOCK_BUTTON" in
 		fi
 		;;
 	3)
-		xdg-open "https://www.google.com/finance/quote/$CURRENCY1-$CURRENCY2" &
+		qutebrowser "https://www.google.com/finance/quote/$CURRENCY1-$CURRENCY2" &
 		;;
 esac
 
