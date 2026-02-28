@@ -7,7 +7,8 @@ case "$BLOCK_BUTTON" in
 		ip_addr=$(ip -4 addr show "$interface" 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1)
 		pub_ip=$(curl -s ifconfig.me 2>/dev/null)
 		gateway=$(ip route | awk '/default/ {print $3}' | head -n 1)
-		notify-send "Network Details" "Interface: $interface\nLocal IP: $ip_addr\nPublic IP: $pub_ip\nGateway: $gateway"
+		network=$(iwctl station "$interface" show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')
+		notify-send "Network Details" "Network: $network\nInterface: $interface\nLocal IP: $ip_addr\nPublic IP: $pub_ip\nGateway: $gateway"
 		;;
 esac
 
@@ -27,17 +28,17 @@ elif [ "$status" = "connected" ]; then
 		strength=$(iw dev "$interface" link | awk '/signal/ {gsub("-",""); print $2}')
 		if [ -n "$no_con" ]; then
 			if [ "$strength" -ge 80 ]; then
-				echo "󰤩"" $network"
+				echo "󰤩"
 			elif [ "$strength" -le 20 ]; then
-				echo "󰤫"" $network"
+				echo "󰤫"
 			elif [ "$strength" -le 40 ]; then
-				echo "󰤠"" $network"
+				echo "󰤠"
 			elif [ "$strength" -le 60 ]; then
-				echo "󰤣"" $network"
+				echo "󰤣"
 			elif [ "$strength" -le 80 ]; then
-				echo "󰤦"" $network"
+				echo "󰤦"
 			else
-				echo "󰤠"" $network"
+				echo "󰤠"
 			fi
 		else
 			if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ]; then
@@ -45,17 +46,17 @@ elif [ "$status" = "connected" ]; then
 				exit 0
 			fi
 			if [ "$strength" -ge 80 ]; then
-				echo "󰤨"" $network"
+				echo "󰤨"
 			elif [ "$strength" -le 20 ]; then
-				echo "󰤯"" $network"
+				echo "󰤯"
 			elif [ "$strength" -le 40 ]; then
-				echo "󰤟"" $network"
+				echo "󰤟"
 			elif [ "$strength" -le 60 ]; then
-				echo "󰤢"" $network"
+				echo "󰤢"
 			elif [ "$strength" -le 80 ]; then
-				echo "󰤥"" $network"
+				echo "󰤥"
 			else
-				echo "󰤠"" $network"
+				echo "󰤠"
 			fi
 		fi
 else
