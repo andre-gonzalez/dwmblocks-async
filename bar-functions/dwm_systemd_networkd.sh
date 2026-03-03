@@ -41,7 +41,7 @@ elif [ "$status" = "connected" ]; then
 				echo "󰤠"
 			fi
 		else
-			if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ]; then
+			if [ "$network" = "Davi" ] || [ "$network" = "CasaRio_5G" ] || [ "$network" = "Que Wifi?" ]; then
 				echo "$no_con"
 				exit 0
 			fi
