@@ -2,27 +2,16 @@
 
 # Dependencies: ip
 
-dwm_vpn() {
+# Early exit if tun0 doesn't exist (zero forks via sysfs)
+[ -d /sys/class/net/tun0 ] || exit 0
 
-    # Handle click actions
-    case "$BLOCK_BUTTON" in
-        1)
-            if ip addr show tun0 >/dev/null 2>&1; then
-                IP=$(ip -4 addr show tun0 | awk '/inet / {print $2}' | cut -d/ -f1)
-                ROUTES=$(ip route show dev tun0 2>/dev/null | head -n 5)
-                notify-send "VPN Details" "Interface: tun0\nIP: $IP\n\nRoutes:\n$ROUTES"
-            else
-                notify-send "VPN" "Not connected"
-            fi
-            ;;
-    esac
-    # Check if tun0 exists and has an IP
-    if ip addr show tun0 >/dev/null 2>&1; then
-        IP=$(ip -4 addr show tun0 | awk '/inet / {print $2}' | cut -d/ -f1)
-        if [ -n "$IP" ]; then
-            printf "🔒 %s" "$IP"
-        fi
-    fi
-}
+case "$BLOCK_BUTTON" in
+    1)
+        IP=$(ip -4 addr show tun0 | awk '/inet / {split($2,a,"/"); print a[1]}')
+        ROUTES=$(ip route show dev tun0 2>/dev/null | head -n 5)
+        notify-send "VPN Details" "Interface: tun0\nIP: $IP\n\nRoutes:\n$ROUTES"
+        ;;
+esac
 
-dwm_vpn
+IP=$(ip -4 addr show tun0 | awk '/inet / {split($2,a,"/"); print a[1]}')
+[ -n "$IP" ] && printf "🔒 %s" "$IP"
