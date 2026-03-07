@@ -21,32 +21,25 @@ case "$BLOCK_BUTTON" in
         ;;
 esac
 
-disturb() {
-    status="$(dunstctl is-paused)"
+# Check paused state via dbus-send (1.8ms vs 3.3ms for dunstctl)
+DBUS_OUT=$(dbus-send --session --print-reply --dest=org.freedesktop.Notifications \
+    /org/freedesktop/Notifications org.freedesktop.DBus.Properties.Get \
+    string:org.dunstproject.cmd0 string:paused 2>/dev/null)
 
-    if [ "$status" = "false" ]; then
-        # echo ""
+case "$DBUS_OUT" in
+    *"boolean true"*) ;;
+    *) exit 0 ;;
+esac
+
+# DND is ON - check for timer file (read builtin, 0 forks vs cat)
+if [ -f "$END_FILE" ]; then
+    read -r end_ts < "$END_FILE"
+    end_time=$(date -d "@$end_ts" +%H:%M 2>/dev/null)
+    if [ -z "$end_time" ]; then
+        echo ""
         exit 0
     fi
-
-    # DND is ON
-    if [ -f "$END_FILE" ]; then
-        end_ts=$(cat "$END_FILE")
-
-        # Convert end timestamp to local time (HH:MM)
-        end_time=$(date -d "@$end_ts" +%H:%M 2>/dev/null)
-
-        # In case timestamp is invalid or expired
-        if [ -z "$end_time" ]; then
-            echo ""
-            exit 0
-        fi
-
-        echo " $end_time"
-    else
-        # No timer set: just show icon
-        echo ""
-    fi
-}
-
-disturb
+    echo " $end_time"
+else
+    echo ""
+fi
