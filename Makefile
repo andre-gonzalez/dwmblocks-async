@@ -21,6 +21,20 @@ OBJS := $(subst $(SRC_DIR)/,$(BUILD_DIR)/,$(SRCS:.c=.o))
 
 INSTALL_DIR := $(DESTDIR)$(PREFIX)/bin
 
+# Bar-function C replacements
+BAR_DIR := bar-functions
+BAR_CFLAGS := -Ofast -std=c99 -Wall -Wpedantic -Wextra
+
+BAR_PLAIN := dwm_countdown dwm_systemd_networkd dwm_memory dwm_cpu
+BAR_PLAIN_BINS := $(addprefix $(BAR_DIR)/,$(addsuffix _c,$(BAR_PLAIN)))
+
+BAR_SPOTIFY := $(BAR_DIR)/dwm_spotify_c
+BAR_SPOTIFY_CFLAGS := $(shell pkg-config --cflags libsystemd)
+BAR_SPOTIFY_LDLIBS := $(shell pkg-config --libs libsystemd)
+
+BAR_BINS := $(BAR_PLAIN_BINS) $(BAR_SPOTIFY)
+BAR_NAMES := $(BAR_PLAIN) dwm_spotify
+
 # Prettify output
 PRINTF := @printf "%-8s %s\n"
 ifeq ($(VERBOSE), 0)
@@ -31,7 +45,7 @@ ifeq ($(DEBUG), 1)
 	CFLAGS += -g
 endif
 
-all: $(BUILD_DIR)/$(BIN)
+all: $(BUILD_DIR)/$(BIN) bar-functions
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c config.h
 	$Qmkdir -p $(@D)
@@ -42,16 +56,39 @@ $(BUILD_DIR)/$(BIN): $(OBJS)
 	$(PRINTF) "LD" $@
 	$Q$(LINK.o) $^ $(LDLIBS) -o $@
 
+# Bar-function targets
+bar-functions: $(BAR_BINS)
+
+$(BAR_PLAIN_BINS): $(BAR_DIR)/%_c: $(BAR_DIR)/%.c
+	$(PRINTF) "CC" $@
+	$Q$(CC) $(BAR_CFLAGS) -o $@ $<
+	$Qstrip $@
+
+$(BAR_SPOTIFY): $(BAR_DIR)/dwm_spotify.c
+	$(PRINTF) "CC" $@
+	$Q$(CC) $(BAR_CFLAGS) $(BAR_SPOTIFY_CFLAGS) -o $@ $< $(BAR_SPOTIFY_LDLIBS)
+	$Qstrip $@
+
 clean:
 	$(PRINTF) "CLEAN" $(BUILD_DIR)
 	$Q$(RM) $(BUILD_DIR)/*
+	$(PRINTF) "CLEAN" "$(BAR_DIR)/*_c"
+	$Q$(RM) $(BAR_BINS)
 
-install: $(BUILD_DIR)/$(BIN)
+install: $(BUILD_DIR)/$(BIN) bar-functions
 	$(PRINTF) "INSTALL" $(INSTALL_DIR)/$(BIN)
 	$Qinstall -D -m 755 $< $(INSTALL_DIR)/$(BIN)
+	$Q$(foreach name,$(BAR_NAMES),\
+		printf "%-8s %s\n" "SYMLINK" $(INSTALL_DIR)/$(name); \
+		ln -sf $(CURDIR)/$(BAR_DIR)/$(name)_c $(INSTALL_DIR)/$(name); \
+	)
 
 uninstall:
 	$(PRINTF) "RM" $(INSTALL_DIR)/$(BIN)
 	$Q$(RM) $(INSTALL_DIR)/$(BIN)
+	$Q$(foreach name,$(BAR_NAMES),\
+		printf "%-8s %s\n" "RM" $(INSTALL_DIR)/$(name); \
+		$(RM) $(INSTALL_DIR)/$(name); \
+	)
 
-.PHONY: all clean install uninstall
+.PHONY: all bar-functions clean install uninstall
