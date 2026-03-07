@@ -36,6 +36,10 @@ BAR_SDBUS_LDLIBS := $(shell pkg-config --libs libsystemd)
 BAR_BINS := $(BAR_PLAIN_BINS) $(BAR_SDBUS_BINS)
 BAR_NAMES := $(BAR_PLAIN) $(BAR_SDBUS)
 
+# Shell-only bar scripts (no C replacement)
+BAR_SHELL := dwm_currency dwm_vpn dwm_ufw dwm_storage dwm_packages \
+             dwm_battery dwm_bluetooth dwm_pulse dwm_backlight dwm_date
+
 # Prettify output
 PRINTF := @printf "%-8s %s\n"
 ifeq ($(VERBOSE), 0)
@@ -83,11 +87,19 @@ install: $(BUILD_DIR)/$(BIN) bar-functions
 		printf "%-8s %s\n" "SYMLINK" $(INSTALL_DIR)/$(name); \
 		ln -sf $(CURDIR)/$(BAR_DIR)/$(name)_c $(INSTALL_DIR)/$(name); \
 	)
+	$Q$(foreach name,$(BAR_SHELL),\
+		printf "%-8s %s\n" "INSTALL" $(INSTALL_DIR)/$(name); \
+		install -m 755 $(BAR_DIR)/$(name) $(INSTALL_DIR)/$(name); \
+	)
 
 uninstall:
 	$(PRINTF) "RM" $(INSTALL_DIR)/$(BIN)
 	$Q$(RM) $(INSTALL_DIR)/$(BIN)
 	$Q$(foreach name,$(BAR_NAMES),\
+		printf "%-8s %s\n" "RM" $(INSTALL_DIR)/$(name); \
+		$(RM) $(INSTALL_DIR)/$(name); \
+	)
+	$Q$(foreach name,$(BAR_SHELL),\
 		printf "%-8s %s\n" "RM" $(INSTALL_DIR)/$(name); \
 		$(RM) $(INSTALL_DIR)/$(name); \
 	)
