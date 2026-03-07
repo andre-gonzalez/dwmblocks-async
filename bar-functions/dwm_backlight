@@ -1,62 +1,59 @@
 #!/bin/sh
 
-#Dependencies: brightnessctl
+#Dependencies: brightnessctl (click actions only)
 
 # Show percentage for 2 seconds after brightness change
 FLAG_FILE="/tmp/dwm_backlight_show"
 
-dwm_backlight() {
-
-	case "$BLOCK_BUTTON" in
-	1) # Left Click
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1)
 		brightnessctl set 50% >/dev/null 2>&1
-		touch /tmp/dwm_backlight_show
-		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		touch "$FLAG_FILE"
+		(sleep 2 && rm -f "$FLAG_FILE" && kill -45 $(pidof dwmblocks)) &
 		kill -45 $(pidof dwmblocks)
 		;;
-	4) # Scroll Wheel up
+	4)
 		brightnessctl set +5% >/dev/null 2>&1
-		touch /tmp/dwm_backlight_show
-		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		touch "$FLAG_FILE"
+		(sleep 2 && rm -f "$FLAG_FILE" && kill -45 $(pidof dwmblocks)) &
 		kill -45 $(pidof dwmblocks)
 		;;
-	5) # Scroll Wheel down
+	5)
 		brightnessctl set 5%- >/dev/null 2>&1
-		touch /tmp/dwm_backlight_show
-		(sleep 2 && rm -f /tmp/dwm_backlight_show && kill -45 $(pidof dwmblocks)) &
+		touch "$FLAG_FILE"
+		(sleep 2 && rm -f "$FLAG_FILE" && kill -45 $(pidof dwmblocks)) &
 		kill -45 $(pidof dwmblocks)
 		;;
-	esac
+esac
 
-	# Check if eDP-1 is connected and has an active resolution (is outputting)
-	if ! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -q "connected" ||
-		! xrandr --query 2>/dev/null | grep -w "^eDP-1" | grep -qE "[0-9]+x[0-9]+\+"; then
-		exit 0
-	fi
+# Check eDP-1 connected + enabled via sysfs (0 forks, replaces 2x xrandr + 4x grep)
+DRM_PATH="/sys/class/drm/card1-eDP-1"
+read -r drm_status < "$DRM_PATH/status" 2>/dev/null || exit 0
+[ "$drm_status" = "connected" ] || exit 0
+read -r drm_enabled < "$DRM_PATH/enabled" 2>/dev/null || exit 0
+[ "$drm_enabled" = "enabled" ] || exit 0
 
-	ACTUAL=$(brightnessctl g)
-	MAX=$(brightnessctl m)
-	BRIGHT=$((ACTUAL * 100 / MAX))
+# Read brightness via sysfs (0 forks, replaces 2x brightnessctl)
+read -r ACTUAL < /sys/class/backlight/intel_backlight/brightness 2>/dev/null || exit 0
+read -r MAX < /sys/class/backlight/intel_backlight/max_brightness 2>/dev/null || exit 0
+BRIGHT=$((ACTUAL * 100 / MAX))
 
-	if [ "$BRIGHT" -eq 100 ]; then
-		# printf "󰃠"
-		exit 0
-	elif [ "$BRIGHT" -le 30 ]; then
-		printf "󰃞" "$BRIGHT"
-	elif [ "$BRIGHT" -le 50 ]; then
-		printf "󰃝"
-	elif [ "$BRIGHT" -le 99 ]; then
-		printf "󰃟"
-	else
-		printf "󰖨"
-	fi
+if [ "$BRIGHT" -eq 100 ]; then
+	# printf "󰃠"
+	exit 0
+elif [ "$BRIGHT" -le 30 ]; then
+	printf "󰃞" "$BRIGHT"
+elif [ "$BRIGHT" -le 50 ]; then
+	printf "󰃝"
+elif [ "$BRIGHT" -le 99 ]; then
+	printf "󰃟"
+else
+	printf "󰖨"
+fi
 
-	# Show percentage if flag file exists
-	if [ -f "$FLAG_FILE" ]; then
-		printf " %d%%\n" "$BRIGHT"
-	else
-		printf "%s\n"
-	fi
-}
-
-dwm_backlight
+if [ -f "$FLAG_FILE" ]; then
+	printf " %d%%\n" "$BRIGHT"
+else
+	printf "%s\n"
+fi
