@@ -4,55 +4,45 @@
 
 FLAG_FILE="/tmp/dwm_volume_show"
 
-dwm_pulse() {
+# Handle click actions
+case "$BLOCK_BUTTON" in
+    1) pamixer -t ;;
+    3) pavucontrol ;;
+    4) pamixer -i 5 ;;
+    5) pamixer -d 5 ;;
+esac
 
-    # Handle click actions
-    case "$BLOCK_BUTTON" in
-        1) pamixer -t ;;
-        3) pavucontrol ;;
-        4) pamixer -i 5 ;;
-        5) pamixer -d 5 ;;
-    esac
+# Check if there is a default sink available
+if ! DEFAULT_SINK=$(pamixer --get-default-sink 2>/dev/null) || [ -z "$DEFAULT_SINK" ]; then
+    exit 0
+fi
 
-    # Check if there is a default sink available
-    if ! DEFAULT_SINK=$(pamixer --get-default-sink 2>/dev/null) || [ -z "$DEFAULT_SINK" ]; then
-        exit 0
-    fi
+# Filter out dummy/null/bluetooth sinks with case (0 forks, replaces 2x echo|grep)
+case "$DEFAULT_SINK" in
+    *[Dd]ummy*|*[Nn]ull*) exit 0 ;;
+    *[Bb]luez*) exit 0 ;;
+esac
 
-    # Filter out dummy and null sinks - they don't represent real sound outputs
-    if echo "$DEFAULT_SINK" | grep -qiE "(dummy|null)"; then
-        exit 0
-    fi
+# Get current volume and mute status
+if ! VOL=$(pamixer --get-volume 2>/dev/null) || [ -z "$VOL" ]; then
+    exit 0
+fi
+MUTED=$(pamixer --get-mute 2>/dev/null)
 
-    # Filter out Bluetooth sinks - dwm_bluetooth handles those
-    if echo "$DEFAULT_SINK" | grep -qi "bluez"; then
-        exit 0
-    fi
+# Determine icon
+if [ "$MUTED" = "true" ] || [ "$VOL" -eq 0 ]; then
+    ICON="󰸈"
+elif [ "$VOL" -le 33 ]; then
+    ICON="󰖀"
+elif [ "$VOL" -le 66 ]; then
+    ICON="󰕾"
+else
+    ICON=""
+fi
 
-    # Get current volume and mute status
-    # If volume retrieval fails, there's no usable sink
-    if ! VOL=$(pamixer --get-volume 2>/dev/null) || [ -z "$VOL" ]; then
-        exit 0
-    fi
-    MUTED=$(pamixer --get-mute 2>/dev/null)
-
-    # Determine icon
-    if [ "$MUTED" = "true" ] || [ "$VOL" -eq 0 ]; then
-        ICON="󰸈"
-    elif [ "$VOL" -le 33 ]; then
-        ICON="󰖀"
-    elif [ "$VOL" -le 66 ]; then
-        ICON="󰕾"
-    else
-        ICON=""
-    fi
-
-    # Show percentage only if flag file exists
-    if [ -f "$FLAG_FILE" ]; then
-        printf "%s %s%%\n" "$ICON" "$VOL"
-    else
-        printf "%s\n" "$ICON"
-    fi
-}
-
-dwm_pulse
+# Show percentage only if flag file exists
+if [ -f "$FLAG_FILE" ]; then
+    printf "%s %s%%\n" "$ICON" "$VOL"
+else
+    printf "%s\n" "$ICON"
+fi
