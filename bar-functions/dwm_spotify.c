@@ -159,7 +159,7 @@ int main(void)
 
 	sd_bus_unref(bus);
 
-	const char *icon = strcmp(status, "Playing") == 0 ? "\xe2\x96\xb6" : "";
+	const char *icon = strcmp(status, "Playing") == 0 ? "\xe2\x96\xb6" : "\xef\x81\x8c";
 
 	if (artist[0] == '\0')
 		printf("%s %s", icon, title);

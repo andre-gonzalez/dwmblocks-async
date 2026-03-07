@@ -30,7 +30,7 @@ printf '%s' "$META" | awk '
 /xesam:artist/ { a = 1; next }
 a && /string "/ { gsub(/"/, ""); sub(/.*string /, ""); r = $0; a = 0 }
 END {
-    icon = (s == "Playing") ? "▶" : ""
+    icon = (s == "Playing") ? "▶" : ""
     if (r == "")
         printf "%s %s", icon, t
     else
