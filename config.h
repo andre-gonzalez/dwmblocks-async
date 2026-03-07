@@ -21,7 +21,7 @@
 #define BLOCKS(X)             \
 	X("",	"dwm_spotify", 3,  2) \
 	X("",	"dwm_currency", 1800,  1) \
-	X("",	"dwm_countdown", 1,  3) \
+	X("",	"dwm_countdown", 0,  3) \
 	X("",	"dwm_vpn", 10,  4) \
 	X("",	"dwm_systemd_networkd", 5,  5) \
 	X("",	"dwm_ufw",	60, 6) \

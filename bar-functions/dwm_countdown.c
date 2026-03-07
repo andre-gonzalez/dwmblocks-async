@@ -38,14 +38,13 @@ int main(void)
 	if (!fp)
 		return 0;
 
-	char last[256] = "";
-	char buf[256];
-	while (fgets(buf, sizeof(buf), fp)) {
-		/* strip trailing newline */
-		buf[strcspn(buf, "\n")] = '\0';
-		memcpy(last, buf, sizeof(last));
+	char last[256];
+	if (!fgets(last, sizeof(last), fp)) {
+		fclose(fp);
+		return 0;
 	}
 	fclose(fp);
+	last[strcspn(last, "\n")] = '\0';
 
 	if (last[0] == '\0')
 		return 0;

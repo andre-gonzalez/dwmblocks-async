@@ -21,9 +21,7 @@ case "$BLOCK_BUTTON" in
         ;;
 esac
 
-while IFS= read -r line; do
-    last="$line"
-done < "$f"
+read -r last < "$f" || exit 0
 
 if [ "$IDENTIFIER" = "unicode" ]; then
     printf "%s⏳ %s%s\n" "$SEP1" "$last" "$SEP2"
