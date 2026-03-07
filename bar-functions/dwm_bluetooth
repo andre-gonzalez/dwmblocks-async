@@ -1,137 +1,136 @@
-#!/bin/dash
+#!/bin/sh
 
-# Dependencies: pamixer
+# Dependencies: bluetoothctl, pamixer
 
 FLAG_FILE="/tmp/dwm_volume_show"
 
-dwm_bluetooth () {
+# Handle click actions
+case "$BLOCK_BUTTON" in
+	1) st -e tmux new-session -A -s bluetooth bluetoothctl ;;
+	3) bluetoothctl disconnect ;;
+	4) pamixer -i 5 ;;
+	5) pamixer -d 5 ;;
+esac
 
-		Handle click actions
-		case "$BLOCK_BUTTON" in
-			1) st -e tmux new-session -A -s bluetooth bluetoothctl ;; # Left Click
-			3) bluetoothctl disconnect ;; # Right click
-			4) pamixer -i 5 ;; # Scroll Wheel up
-			5) pamixer -d 5 ;; # Scroll Wheel down
+# Get connected devices (1 fork) — exit early if none
+CONNECTED=$(bluetoothctl devices Connected 2>/dev/null)
+if [ -z "$CONNECTED" ]; then
+	printf "\n"
+	exit 0
+fi
+
+# Only query default sink when devices exist (deferred — saves ~7ms when idle)
+default_sink=""
+if command -v pamixer >/dev/null 2>&1; then
+	default_sink=$(pamixer --get-default-sink 2>/dev/null)
+	case "$default_sink" in
+		*[Dd]ummy*|*[Nn]ull*) default_sink="" ;;
+	esac
+fi
+
+output=""
+first=true
+
+# Here-doc avoids pipe subshell so $output persists
+while read -r _ mac _rest; do
+	[ -z "$mac" ] && continue
+
+	info=$(bluetoothctl info "$mac" 2>/dev/null)
+
+	# Parse name and battery with shell builtins (0 forks vs 8 in original)
+	name=""
+	battery=""
+	while IFS= read -r line; do
+		case "$line" in
+			*"Name: "*)
+				name="${line#*Name: }"
+				# Trim leading whitespace
+				while case "$name" in " "*|"	"*) true ;; *) false ;; esac; do
+					name="${name#?}"
+				done
+				;;
+			*"Battery Percentage"*"("*")"*)
+				tmp="${line#*(}"
+				battery="${tmp%%)*}"
+				;;
 		esac
+	done <<-INFOEOF
+	$info
+	INFOEOF
 
-		output=""
-		first=true
+	[ -z "$name" ] && continue
 
-		# Get default sink to check if it's a Bluetooth audio device
-		default_sink=""
-		if command -v pamixer >/dev/null 2>&1; then
-				default_sink=$(pamixer --get-default-sink 2>/dev/null)
-				# Filter out dummy and null sinks
-				if echo "$default_sink" | grep -qiE "(dummy|null)"; then
-						default_sink=""
-				fi
-		fi
+	# Check if this device is the active Bluetooth audio sink
+	audio_icon=""
+	audio_vol=""
+	if [ -n "$default_sink" ]; then
+		case "$default_sink" in
+			*[Bb]luez*)
+				name_lower=$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')
+				sink_lower=$(printf '%s' "$default_sink" | tr '[:upper:]' '[:lower:]')
+				mac_lower=$(printf '%s' "$mac" | tr '[:upper:]' '[:lower:]')
+				is_match=false
+				case "$sink_lower" in
+					*"$name_lower"*) is_match=true ;;
+					*"$mac_lower"*)  is_match=true ;;
+				esac
 
-		# Get all connected devices - extract MAC addresses
-		devices=$(bluetoothctl devices Connected | awk '{print $2}')
-
-		# Process each MAC address
-		for mac in $devices; do
-				# Skip empty MAC addresses
-				if [ -z "$mac" ]; then
-						continue
-				fi
-
-				# Get device info for this MAC address
-				info=$(bluetoothctl info "$mac" 2>/dev/null)
-				name=$(echo "$info" | grep 'Name' | cut -d : -f 2 | xargs)
-				battery=$(echo "$info" | grep 'Battery Percentage' | grep -oE '\([0-9]+\)' | grep -oE '[0-9]+')
-
-				if [ -n "$name" ]; then
-						# Check if this device is the active audio sink
-						is_audio_sink=false
-						audio_icon=""
-						audio_vol=""
-
-						if [ -n "$default_sink" ] && command -v pamixer >/dev/null 2>&1; then
-								# Check if default sink is a Bluetooth sink and matches this device
-								# PulseAudio/PipeWire typically include device name or MAC in sink description
-								# First check if it's a Bluetooth sink (bluez prefix)
-								if echo "$default_sink" | grep -qi "bluez"; then
-										# Then check if sink name/description contains device name or MAC
-										name_lower=$(echo "$name" | tr '[:upper:]' '[:lower:]')
-										sink_lower=$(echo "$default_sink" | tr '[:upper:]' '[:lower:]')
-										if echo "$sink_lower" | grep -qF "$name_lower" || \
-											   echo "$sink_lower" | grep -qF "$(echo "$mac" | tr '[:upper:]' '[:lower:]')"; then
-												is_audio_sink=true
-										fi
-								fi
-
-								if [ "$is_audio_sink" = "true" ]; then
-
-										# Get volume and mute status
-										vol=$(pamixer --get-volume 2>/dev/null)
-										muted=$(pamixer --get-mute 2>/dev/null)
-
-										if [ -n "$vol" ]; then
-												# Determine audio icon based on volume level
-												if [ "$muted" = "true" ] || [ "$vol" -eq 0 ]; then
-														audio_icon="󰸈"
-												elif [ "$vol" -le 33 ]; then
-														audio_icon="󰖀"
-												elif [ "$vol" -le 66 ]; then
-														audio_icon="󰕾"
-												else
-														audio_icon=""
-												fi
-
-												# Show percentage if flag file exists
-												if [ -f "$FLAG_FILE" ]; then
-														audio_vol="$vol%"
-												fi
-										fi
-								fi
-						fi
-
-						# Format device name
-						if [ "$name" = "LE_WH-1000XM3" ] || [ "$name" = "WH-1000XM3" ]; then
-								device_str="XM3"
-								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
-										device_str="$device_str $battery%"
-								fi
-						elif [ "$name" = "Jabra Elite 3" ]; then
-								device_str="Jabra"
-								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
-										device_str="$device_str $battery%"
-								fi
-						elif [ "$name" = "Mi Bluetooth Speaker" ]; then
-								device_str="󰂰 Mi"
+				if [ "$is_match" = "true" ]; then
+					vol=$(pamixer --get-volume 2>/dev/null)
+					muted=$(pamixer --get-mute 2>/dev/null)
+					if [ -n "$vol" ]; then
+						if [ "$muted" = "true" ] || [ "$vol" -eq 0 ]; then
+							audio_icon="󰸈"
+						elif [ "$vol" -le 33 ]; then
+							audio_icon="󰖀"
+						elif [ "$vol" -le 66 ]; then
+							audio_icon="󰕾"
 						else
-								device_str="󰂰 $name"
-								if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
-										device_str="$device_str $battery%"
-								fi
+							audio_icon=""
 						fi
-
-						# Add audio icon and volume if this is an audio sink
-						if [ "$is_audio_sink" = "true" ] && [ -n "$audio_icon" ]; then
-								device_str="$device_str $audio_icon"
-								if [ -n "$audio_vol" ]; then
-										device_str="$device_str $audio_vol"
-								fi
-						fi
-
-						# Add delimiter if not first device
-						if [ "$first" = "true" ]; then
-								output="$device_str"
-								first=false
-						else
-								output="$output · $device_str"
-						fi
+						[ -f "$FLAG_FILE" ] && audio_vol="$vol%"
+					fi
 				fi
-		done
+				;;
+		esac
+	fi
 
-		# Print output if any devices were found
-		if [ -n "$output" ]; then
-				printf "%s" "$output"
-		fi
+	# Format device name
+	case "$name" in
+		"LE_WH-1000XM3"|"WH-1000XM3") device_str="XM3" ;;
+		"Jabra Elite 3") device_str="Jabra" ;;
+		"Mi Bluetooth Speaker") device_str="󰂰 Mi" ;;
+		*) device_str="󰂰 $name" ;;
+	esac
 
-		printf "%s\n" "$SEP2"
-}
+	# Append battery if low (skip for Mi speaker)
+	case "$name" in
+		"Mi Bluetooth Speaker") ;;
+		*)
+			if [ -n "$battery" ] && [ "$battery" -lt 60 ]; then
+				device_str="$device_str $battery%"
+			fi
+			;;
+	esac
 
-dwm_bluetooth
+	# Append audio icon and volume
+	if [ -n "$audio_icon" ]; then
+		device_str="$device_str $audio_icon"
+		[ -n "$audio_vol" ] && device_str="$device_str $audio_vol"
+	fi
+
+	if [ "$first" = "true" ]; then
+		output="$device_str"
+		first=false
+	else
+		output="$output · $device_str"
+	fi
+done <<EOF
+$CONNECTED
+EOF
+
+if [ -n "$output" ]; then
+	printf "%s" "$output"
+fi
+
+printf "%s\n" "$SEP2"

@@ -1,18 +1,16 @@
 #!/bin/sh
 
-# A dwm_bar function that shows the current date and time
+# A dwm_bar function that shows UFW firewall status
 # Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
-# Date is formatted like like this: "[Mon 01-01-00 00:00:00]"
-dwm_ufw () {
-		status=$(sudo ufw status | head -n 1)
-		if [ "$status" = "Status: inactive" ]; then
-				echo "UFW "
-		elif [ "$status" = "Status: active" ]; then
-				exit 0
-				# echo "UFW "
-		fi
-}
-
-dwm_ufw
+# Read /etc/ufw/ufw.conf directly (zero forks, no sudo)
+while IFS='=' read -r key val; do
+	case "$key" in
+		ENABLED)
+			[ "$val" = "yes" ] && exit 0
+			echo "UFW "
+			exit 0
+			;;
+	esac
+done < /etc/ufw/ufw.conf
