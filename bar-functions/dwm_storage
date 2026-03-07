@@ -10,101 +10,95 @@ case "$BLOCK_BUTTON" in
 	3) st -e tmux new-session -A -s ncdu sh -c 'limpar-disco; ncdu /' ;;
 esac
 
-dwm_storage () {
-	# Calculate actual space used by /home directory
-	HOME_USED=$(du -sh /home 2>/dev/null | awk '{print $1}')
+# Calculate actual space used by /home directory (1 fork, unavoidable)
+du_out=$(du -sh /home 2>/dev/null)
+HOME_USED="${du_out%%	*}"
 
-	# Convert HOME_USED to GB for comparison
-	# Parse the human-readable format (e.g., "50G", "1.2T", "500M") and convert to GB
-	HOME_USED_GB=$(echo "$HOME_USED" | awk '{
-		# Extract numeric value (remove all non-numeric except decimal point)
-		value = $0
-		gsub(/[^0-9.]/, "", value)
+# Convert HOME_USED to GB with shell arithmetic (0 forks)
+val="${HOME_USED%[A-Za-z]*}"
+unit="${HOME_USED#"$val"}"
+case "$unit" in
+	K|k) HOME_USED_GB=0 ;;
+	M|m) HOME_USED_GB=0 ;;
+	G|g) HOME_USED_GB="${val%%.*}" ;;
+	T|t) HOME_USED_GB=$(( ${val%%.*} * 1024 )) ;;
+	*)   HOME_USED_GB=0 ;;
+esac
 
-		# Extract unit (get last character, convert to uppercase)
-		unit = toupper(substr($0, length($0)))
+# Detect filesystem type from /proc/mounts (0 forks)
+filesystem=""
+while read -r _dev mnt fstype _rest; do
+	if [ "$mnt" = "/" ]; then
+		filesystem="$fstype"
+		break
+	fi
+done < /proc/mounts
 
-		if (value != "" && (unit == "K" || unit == "M" || unit == "G" || unit == "T")) {
-			if (unit == "K") gb = value / 1024 / 1024
-			else if (unit == "M") gb = value / 1024
-			else if (unit == "G") gb = value
-			else if (unit == "T") gb = value * 1024
-			printf "%.2f", gb
-		} else {
-			print "0"
-		}
-	}')
+if [ "$filesystem" = "btrfs" ]; then
+	# Single btrfs call with raw bytes (1 fork, replaces 2 btrfs + 4 awk + 2 sed)
+	BTRFS_OUT=$(btrfs filesystem usage -b / 2>/dev/null)
+	DISK_USED_BYTES=""
+	DISK_TOTAL_BYTES=""
+	while IFS= read -r line; do
+		case "$line" in
+			*"Device size:"*)
+				read -r DISK_TOTAL_BYTES <<-TRIMEOF
+				${line##*:}
+				TRIMEOF
+				;;
+			"    Used:"*)
+				read -r DISK_USED_BYTES <<-TRIMEOF
+				${line##*:}
+				TRIMEOF
+				;;
+		esac
+	done <<-BTRFSEOF
+	$BTRFS_OUT
+	BTRFSEOF
 
-	# Determine filesystem type for root filesystem and collect disk usage
-	filesystem=$(df -Th / | awk 'FNR == 2{print $2}')
-
-	# Calculate total disk usage percentage for root filesystem
-	if [ "$filesystem" = "btrfs" ]; then
-		# For btrfs, get used and total from btrfs filesystem usage
-		DISK_USED=$(btrfs filesystem usage -H / 2>/dev/null | awk '/   Used:/ {print $2}' | sed 's/[^0-9.]//g')
-		DISK_TOTAL=$(btrfs filesystem usage -H / 2>/dev/null | awk '/Device size/ {print $3}' | sed 's/[^0-9.]//g')
-		if [ -n "$DISK_USED" ] && [ -n "$DISK_TOTAL" ] && [ "$DISK_TOTAL" != "0" ]; then
-			DISK_PERCENT=$(echo "$DISK_USED $DISK_TOTAL" | awk '{printf "%.0f", ($1/$2)*100}')
-		else
-			DISK_PERCENT="0"
-		fi
-		# For warning calculation, convert to GB
-		DISK_USED_GB=$(echo "$DISK_USED" | awk '{printf "%d", $1/1024/1024/1024}')
-		DISK_TOTAL_GB=$(echo "$DISK_TOTAL" | awk '{printf "%d", $1/1024/1024/1024}')
-		if [ -n "$DISK_USED_GB" ] && [ -n "$DISK_TOTAL_GB" ] && [ "$DISK_TOTAL_GB" -gt 0 ]; then
-			AVAIL_GB=$((DISK_TOTAL_GB - DISK_USED_GB))
-		else
-			AVAIL_GB=""
-		fi
+	if [ -n "$DISK_USED_BYTES" ] && [ -n "$DISK_TOTAL_BYTES" ] && [ "$DISK_TOTAL_BYTES" -gt 0 ] 2>/dev/null; then
+		DISK_PERCENT=$((DISK_USED_BYTES * 100 / DISK_TOTAL_BYTES))
+		DISK_USED_GB=$((DISK_USED_BYTES / 1073741824))
+		DISK_TOTAL_GB=$((DISK_TOTAL_BYTES / 1073741824))
+		AVAIL_GB=$((DISK_TOTAL_GB - DISK_USED_GB))
 	else
-		# For other filesystems, use df -P to get 1K blocks (POSIX mode)
-		df_output=$(df -P / | tail -n 1)
-		DISK_USED_BLOCKS=$(echo $df_output | awk '{print $3}')
-		DISK_TOTAL_BLOCKS=$(echo $df_output | awk '{print $2}')
-		DISK_AVAIL_BLOCKS=$(echo $df_output | awk '{print $4}')
-
-		# Calculate percentage from 1K blocks
-		if [ -n "$DISK_USED_BLOCKS" ] && [ -n "$DISK_TOTAL_BLOCKS" ] && [ "$DISK_TOTAL_BLOCKS" != "0" ]; then
-			DISK_PERCENT=$(echo "$DISK_USED_BLOCKS $DISK_TOTAL_BLOCKS" | awk '{printf "%.0f", ($1/$2)*100}')
-		else
-			DISK_PERCENT="0"
-		fi
-
-		# For warning, convert available blocks to GB (1K blocks / 1024 / 1024 = GB)
-		if [ -n "$DISK_AVAIL_BLOCKS" ] && [ "$DISK_AVAIL_BLOCKS" -gt 0 ]; then
-			AVAIL_GB=$(echo "$DISK_AVAIL_BLOCKS" | awk '{printf "%d", $1/1024/1024}')
-		else
-			AVAIL_GB=""
-		fi
+		DISK_PERCENT=0
+		AVAIL_GB=""
 	fi
+else
+	# Non-btrfs: single df call, parse with read (1 fork, replaces df + tail + 4 awk)
+	read -r _header
+	read -r _dev DISK_TOTAL_BLOCKS DISK_USED_BLOCKS DISK_AVAIL_BLOCKS _rest <<-DFEOF
+	$(df -P /)
+	DFEOF
 
-	# Display the output based on conditions:
-	# - If HOME_USED < 150GB: don't print home usage
-	#   - If DISK_PERCENT > 85%: print only disk percentage
-	#   - If DISK_PERCENT <= 85%: print nothing
-	# - If HOME_USED >= 150GB: print home usage (and disk percentage if > 85%)
-	HOME_LESS_THAN_150GB=$(echo "$HOME_USED_GB" | awk '{if ($1 < 150 && $1 > 0) print "1"; else print "0"}')
-	if [ -n "$HOME_USED_GB" ] && [ "$HOME_LESS_THAN_150GB" = "1" ]; then
-		# Home usage is less than 100GB
-		if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
-			# Only print disk percentage if > 85%
-			printf " %s%%\n" "$DISK_PERCENT"
-		fi
-		# Otherwise print nothing
+	if [ -n "$DISK_USED_BLOCKS" ] && [ -n "$DISK_TOTAL_BLOCKS" ] && [ "$DISK_TOTAL_BLOCKS" -gt 0 ] 2>/dev/null; then
+		DISK_PERCENT=$((DISK_USED_BLOCKS * 100 / DISK_TOTAL_BLOCKS))
 	else
-		# Home usage is >= 100GB, keep original behavior
-		if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
-			printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
-		else
-			printf "󰋜 %s\n" "$HOME_USED"
-		fi
+		DISK_PERCENT=0
 	fi
 
-	# Storage warning notification (check available space on root filesystem)
-	# Only trigger if AVAIL_GB is a valid positive integer less than 15
-	if [ -n "$AVAIL_GB" ] && [ "$AVAIL_GB" -ge 0 ] 2>/dev/null && [ "$AVAIL_GB" -lt 15 ] 2>/dev/null; then
-		notify-send "HD cheio"
+	if [ -n "$DISK_AVAIL_BLOCKS" ] && [ "$DISK_AVAIL_BLOCKS" -gt 0 ] 2>/dev/null; then
+		AVAIL_GB=$((DISK_AVAIL_BLOCKS / 1048576))
+	else
+		AVAIL_GB=""
 	fi
-}
+fi
 
-dwm_storage
+# Display output (0 forks)
+if [ -n "$HOME_USED_GB" ] && [ "$HOME_USED_GB" -lt 150 ] && [ "$HOME_USED_GB" -gt 0 ] 2>/dev/null; then
+	if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
+		printf " %s%%\n" "$DISK_PERCENT"
+	fi
+else
+	if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
+		printf "󰋜 %s ·  %s%%\n" "$HOME_USED" "$DISK_PERCENT"
+	else
+		printf "󰋜 %s\n" "$HOME_USED"
+	fi
+fi
+
+# Storage warning notification
+if [ -n "$AVAIL_GB" ] && [ "$AVAIL_GB" -ge 0 ] 2>/dev/null && [ "$AVAIL_GB" -lt 15 ] 2>/dev/null; then
+	notify-send "HD cheio"
+fi
