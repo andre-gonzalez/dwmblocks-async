@@ -164,29 +164,32 @@ lower resource usage. They produce identical output to their shell counterparts.
 
 ### Available C bar functions
 
-| Script           | Source file              |
-| ---------------- | ------------------------ |
-| `dwm_countdown`  | `bar-functions/dwm_countdown.c` |
+| Script           | Source file                      | Extra dependency |
+| ---------------- | -------------------------------- | ---------------- |
+| `dwm_countdown`  | `bar-functions/dwm_countdown.c`  | none             |
+| `dwm_spotify`    | `bar-functions/dwm_spotify.c`    | `libsystemd`     |
 
 ### Compiling
 
 ```sh
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_countdown_c bar-functions/dwm_countdown.c
+gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_spotify_c bar-functions/dwm_spotify.c $(pkg-config --cflags --libs libsystemd)
 ```
 
 To reduce the binary size further, strip debug symbols:
 
 ```sh
-strip bar-functions/dwm_countdown_c
+strip bar-functions/dwm_countdown_c bar-functions/dwm_spotify_c
 ```
 
 ### Installing
 
-Symlink the compiled binary into `/usr/local/bin` so it is available on your
-`PATH`:
+Symlink the compiled binaries into `/usr/local/bin` so they are available on
+your `PATH`:
 
 ```sh
 sudo ln -sf "$(pwd)/bar-functions/dwm_countdown_c" /usr/local/bin/dwm_countdown
+sudo ln -sf "$(pwd)/bar-functions/dwm_spotify_c" /usr/local/bin/dwm_spotify
 ```
 
 Then update `config.h` to use the binary name if it differs from the shell

@@ -1,50 +1,39 @@
 #!/bin/sh
 
-# A dwm_bar function that shows the current artist, track, duration, and status from Spotify using playerctl
+# A dwm_bar function that shows the current artist, track, and status from Spotify using dbus-send
 # Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
-# Dependencies: spotify/spotifyd, playerctl
+# Dependencies: spotify/spotifyd, dbus
 
-# NOTE: The official spotify client does not provide the track position or shuffle status through playerctl. This does work through spotifyd however.
+# NOTE: The official spotify client does not provide the track position or shuffle status through MPRIS. This does work through spotifyd however.
 
-dwm_spotify () {
-    if ps -C spotify > /dev/null; then
-        PLAYER="spotify"
-    elif ps -C spotifyd > /dev/null; then
-        PLAYER="spotifyd"
-    elif ps -C spotify_player > /dev/null; then
-        PLAYER="spotify_player"
-    fi
+DBUS_ARGS="--session --print-reply /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.GetAll string:org.mpris.MediaPlayer2.Player"
 
-    if [ "$PLAYER" = "spotify" ] || [ "$PLAYER" = "spotifyd" ] || [ "$PLAYER" = "spotify_player" ]; then
+for p in spotify spotifyd spotify_player; do
+    META=$(dbus-send --dest="org.mpris.MediaPlayer2.$p" $DBUS_ARGS 2>/dev/null) && break
+    META=""
+done
+[ -z "$META" ] && exit 0
 
-       # Handle click actions
-        case "$BLOCK_BUTTON" in
-            1) playerctl play-pause ;;
-            2) st -e tmux new-session -A -s spotify spotify_player ;;
-            3) playerctl next ;;
-            4) playerctl next ;;
-            5) playerctl previous ;;
-        esac
+case "$BLOCK_BUTTON" in
+    1) dbus-send --session --print-reply --dest="org.mpris.MediaPlayer2.$p" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause >/dev/null 2>&1 ;;
+    2) st -e tmux new-session -A -s spotify spotify_player ;;
+    3) dbus-send --session --print-reply --dest="org.mpris.MediaPlayer2.$p" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next >/dev/null 2>&1 ;;
+    4) dbus-send --session --print-reply --dest="org.mpris.MediaPlayer2.$p" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next >/dev/null 2>&1 ;;
+    5) dbus-send --session --print-reply --dest="org.mpris.MediaPlayer2.$p" /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous >/dev/null 2>&1 ;;
+esac
 
-        STATUS=$(playerctl metadata --format "{{status}}")
-		ARTIST=$(playerctl metadata --format "{{artist}}")
-		TITLE=$(playerctl metadata --format "{{title}}")
-
-			if [ "$STATUS" = "Playing" ]; then
-				STATUS="▶"
-			else
-				STATUS=""
-			fi
-
-
-			if [ -z "$ARTIST" ]; then
-				printf "%s %s" "$STATUS" "$TITLE"
-			else
-				printf "%s %s - %s" "$STATUS" "$ARTIST" "$TITLE"
-			fi
-	fi
+printf '%s' "$META" | awk '
+/PlaybackStatus/ { getline; gsub(/"/, "", $NF); s = $NF }
+/xesam:title/ { getline; gsub(/"/, ""); sub(/.*string /, ""); t = $0 }
+/xesam:artist/ { a = 1; next }
+a && /string "/ { gsub(/"/, ""); sub(/.*string /, ""); r = $0; a = 0 }
+END {
+    icon = (s == "Playing") ? "▶" : ""
+    if (r == "")
+        printf "%s %s", icon, t
+    else
+        printf "%s %s - %s", icon, r, t
 }
-
-dwm_spotify
+'
