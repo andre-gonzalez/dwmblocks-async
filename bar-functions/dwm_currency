@@ -5,11 +5,9 @@
 # Additional plugin added by Brayan de Albuquerque <brayandealbuquerque@gmail.com>
 # GNU GPLv3
 
-# Dependencies: curl
+# Dependencies: curl, jq
 
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-. "$SCRIPT_DIR/dwm_currency.conf"
-
+. "${0%/*}/dwm_currency.conf"
 
 CURRENCY1=USD
 CURRENCY2=BRL
@@ -32,8 +30,6 @@ esac
 
 dwm_currency() {
 	if [ "$ENABLED" = 1 ]; then
-
-
 		RATE=$(curl -s "https://api.frankfurter.app/latest?from=$CURRENCY1&to=$CURRENCY2" | jq -r ".rates.$CURRENCY2")
 		printf " %s" "$(awk "BEGIN {printf \"%.2f (%.2f%%)\", $RATE, (1 - $RATE / $TARGET) * 100}")"
 	else
@@ -44,16 +40,17 @@ dwm_currency() {
 dwm_currency
 
 work_hours() {
-	day_of_week=$(date +%A)
-	hour=$(date +%H)
+	read -r dow hour <<EOF
+$(date '+%A %H')
+EOF
 
-	for x in Monday Tuesday Wednesday Thursday Friday; do
-		if [ "$x" = "$day_of_week" ]; then
+	case "$dow" in
+		Monday|Tuesday|Wednesday|Thursday|Friday)
 			if [ "$hour" -ge 8 ] && [ "$hour" -lt 17 ]; then
 				dwm_currency
 			fi
-		fi
-	done
+			;;
+	esac
 }
 
 work_hours
