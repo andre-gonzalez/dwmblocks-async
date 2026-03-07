@@ -28,12 +28,13 @@ BAR_CFLAGS := -Ofast -std=c99 -Wall -Wpedantic -Wextra
 BAR_PLAIN := dwm_countdown dwm_systemd_networkd dwm_memory dwm_cpu
 BAR_PLAIN_BINS := $(addprefix $(BAR_DIR)/,$(addsuffix _c,$(BAR_PLAIN)))
 
-BAR_SPOTIFY := $(BAR_DIR)/dwm_spotify_c
-BAR_SPOTIFY_CFLAGS := $(shell pkg-config --cflags libsystemd)
-BAR_SPOTIFY_LDLIBS := $(shell pkg-config --libs libsystemd)
+BAR_SDBUS := dwm_spotify dwm_do_not_disturb
+BAR_SDBUS_BINS := $(addprefix $(BAR_DIR)/,$(addsuffix _c,$(BAR_SDBUS)))
+BAR_SDBUS_CFLAGS := $(shell pkg-config --cflags libsystemd)
+BAR_SDBUS_LDLIBS := $(shell pkg-config --libs libsystemd)
 
-BAR_BINS := $(BAR_PLAIN_BINS) $(BAR_SPOTIFY)
-BAR_NAMES := $(BAR_PLAIN) dwm_spotify
+BAR_BINS := $(BAR_PLAIN_BINS) $(BAR_SDBUS_BINS)
+BAR_NAMES := $(BAR_PLAIN) $(BAR_SDBUS)
 
 # Prettify output
 PRINTF := @printf "%-8s %s\n"
@@ -64,9 +65,9 @@ $(BAR_PLAIN_BINS): $(BAR_DIR)/%_c: $(BAR_DIR)/%.c
 	$Q$(CC) $(BAR_CFLAGS) -o $@ $<
 	$Qstrip $@
 
-$(BAR_SPOTIFY): $(BAR_DIR)/dwm_spotify.c
+$(BAR_SDBUS_BINS): $(BAR_DIR)/%_c: $(BAR_DIR)/%.c
 	$(PRINTF) "CC" $@
-	$Q$(CC) $(BAR_CFLAGS) $(BAR_SPOTIFY_CFLAGS) -o $@ $< $(BAR_SPOTIFY_LDLIBS)
+	$Q$(CC) $(BAR_CFLAGS) $(BAR_SDBUS_CFLAGS) -o $@ $< $(BAR_SDBUS_LDLIBS)
 	$Qstrip $@
 
 clean:

@@ -171,6 +171,7 @@ lower resource usage. They produce identical output to their shell counterparts.
 | `dwm_systemd_networkd`  | `bar-functions/dwm_systemd_networkd.c`  | none             |
 | `dwm_memory`            | `bar-functions/dwm_memory.c`            | none             |
 | `dwm_cpu`               | `bar-functions/dwm_cpu.c`               | none             |
+| `dwm_do_not_disturb`    | `bar-functions/dwm_do_not_disturb.c`    | `libsystemd`    |
 
 ### Compiling and installing
 
