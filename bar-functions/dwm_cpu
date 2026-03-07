@@ -4,43 +4,49 @@
 # Based on dwm_resources by Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
-dwm_cpu () {
+# Uses /proc/stat delta between invocations instead of top -bn1 (248ms → ~1ms)
 
-	# Handle click actions
-	case "$BLOCK_BUTTON" in
-		1) st -e tmux new-session -A -s btop_cpu btop -p 1 & exit 0 ;;
-		3) notify-send "Top CPU Processes" "$(ps axo pid,comm,%cpu --sort=-%cpu | head -n 6)" ; exit 0 ;;
-	esac
+STAT_FILE="/tmp/dwm_cpu_stat"
 
-	# Gather CPU usage
-	CPU_NUM=$(top -bn1 | awk '/Cpu/ {print int($2)}')
+case "$BLOCK_BUTTON" in
+	1) st -e tmux new-session -A -s btop_cpu btop -p 1 & exit 0 ;;
+	3) notify-send "Top CPU Processes" "$(ps axo pid,comm,%cpu --sort=-%cpu | head -n 6)" ; exit 0 ;;
+esac
 
-	# Check battery status (try BAT1 first, then BAT0)
-	BAT="BAT1"
-	if [ ! -f "/sys/class/power_supply/$BAT/status" ]; then
-		BAT="BAT0"
-	fi
+# Read current /proc/stat cpu line (zero forks)
+read -r _ user nice system idle iowait irq softirq steal _ _ < /proc/stat
+total=$((user + nice + system + idle + iowait + irq + softirq + steal))
 
-	# Determine if running on battery and apply appropriate threshold
-	if [ -f "/sys/class/power_supply/$BAT/status" ]; then
-		STATUS=$(cat /sys/class/power_supply/$BAT/status)
-		if [ "$STATUS" = "Discharging" ]; then
-			# On battery: print if CPU utilization is above 20%
-			if [ "$CPU_NUM" -ge 20 ]; then
-				printf " %s%%\n" "$CPU_NUM"
-			fi
-		else
-			# Plugged in: print if CPU utilization is above 60%
-			if [ "$CPU_NUM" -ge 70 ]; then
-				printf " %s%%\n" "$CPU_NUM"
-			fi
-		fi
-	else
-		# Fallback: assume plugged in if battery status cannot be detected
-		if [ "$CPU_NUM" -ge 70 ]; then
-			printf " %s%%\n" "$CPU_NUM"
-		fi
-	fi
-}
+# Read previous snapshot
+if [ -f "$STAT_FILE" ]; then
+	read -r prev_total prev_idle < "$STAT_FILE"
+else
+	prev_total=0
+	prev_idle=0
+fi
 
-dwm_cpu
+# Save current snapshot (zero forks)
+printf '%s %s\n' "$total" "$idle" > "$STAT_FILE"
+
+# Calculate delta
+d_total=$((total - prev_total))
+d_idle=$((idle - prev_idle))
+
+if [ "$d_total" -le 0 ]; then
+	exit 0
+fi
+
+CPU_NUM=$(( (d_total - d_idle) * 100 / d_total ))
+
+# Battery status via sysfs (zero forks)
+BAT="BAT1"
+[ -f "/sys/class/power_supply/$BAT/status" ] || BAT="BAT0"
+threshold=70
+if [ -f "/sys/class/power_supply/$BAT/status" ]; then
+	read -r bat_status < "/sys/class/power_supply/$BAT/status"
+	[ "$bat_status" = "Discharging" ] && threshold=20
+fi
+
+if [ "$CPU_NUM" -ge "$threshold" ]; then
+	printf " %s%%\n" "$CPU_NUM"
+fi

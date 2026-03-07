@@ -169,6 +169,8 @@ lower resource usage. They produce identical output to their shell counterparts.
 | `dwm_countdown`         | `bar-functions/dwm_countdown.c`         | none             |
 | `dwm_spotify`           | `bar-functions/dwm_spotify.c`           | `libsystemd`     |
 | `dwm_systemd_networkd`  | `bar-functions/dwm_systemd_networkd.c`  | none             |
+| `dwm_memory`            | `bar-functions/dwm_memory.c`            | none             |
+| `dwm_cpu`               | `bar-functions/dwm_cpu.c`               | none             |
 
 ### Compiling
 
@@ -176,12 +178,14 @@ lower resource usage. They produce identical output to their shell counterparts.
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_countdown_c bar-functions/dwm_countdown.c
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_spotify_c bar-functions/dwm_spotify.c $(pkg-config --cflags --libs libsystemd)
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_systemd_networkd_c bar-functions/dwm_systemd_networkd.c
+gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_memory_c bar-functions/dwm_memory.c
+gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_cpu_c bar-functions/dwm_cpu.c
 ```
 
 To reduce the binary size further, strip debug symbols:
 
 ```sh
-strip bar-functions/dwm_countdown_c bar-functions/dwm_spotify_c bar-functions/dwm_systemd_networkd_c
+strip bar-functions/dwm_countdown_c bar-functions/dwm_spotify_c bar-functions/dwm_systemd_networkd_c bar-functions/dwm_memory_c bar-functions/dwm_cpu_c
 ```
 
 ### Installing
@@ -193,6 +197,8 @@ your `PATH`:
 sudo ln -sf "$(pwd)/bar-functions/dwm_countdown_c" /usr/local/bin/dwm_countdown
 sudo ln -sf "$(pwd)/bar-functions/dwm_spotify_c" /usr/local/bin/dwm_spotify
 sudo ln -sf "$(pwd)/bar-functions/dwm_systemd_networkd_c" /usr/local/bin/dwm_systemd_networkd
+sudo ln -sf "$(pwd)/bar-functions/dwm_memory_c" /usr/local/bin/dwm_memory
+sudo ln -sf "$(pwd)/bar-functions/dwm_cpu_c" /usr/local/bin/dwm_cpu
 ```
 
 Then update `config.h` to use the binary name if it differs from the shell
