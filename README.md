@@ -164,22 +164,24 @@ lower resource usage. They produce identical output to their shell counterparts.
 
 ### Available C bar functions
 
-| Script           | Source file                      | Extra dependency |
-| ---------------- | -------------------------------- | ---------------- |
-| `dwm_countdown`  | `bar-functions/dwm_countdown.c`  | none             |
-| `dwm_spotify`    | `bar-functions/dwm_spotify.c`    | `libsystemd`     |
+| Script                  | Source file                             | Extra dependency |
+| ----------------------- | --------------------------------------- | ---------------- |
+| `dwm_countdown`         | `bar-functions/dwm_countdown.c`         | none             |
+| `dwm_spotify`           | `bar-functions/dwm_spotify.c`           | `libsystemd`     |
+| `dwm_systemd_networkd`  | `bar-functions/dwm_systemd_networkd.c`  | none             |
 
 ### Compiling
 
 ```sh
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_countdown_c bar-functions/dwm_countdown.c
 gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_spotify_c bar-functions/dwm_spotify.c $(pkg-config --cflags --libs libsystemd)
+gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_systemd_networkd_c bar-functions/dwm_systemd_networkd.c
 ```
 
 To reduce the binary size further, strip debug symbols:
 
 ```sh
-strip bar-functions/dwm_countdown_c bar-functions/dwm_spotify_c
+strip bar-functions/dwm_countdown_c bar-functions/dwm_spotify_c bar-functions/dwm_systemd_networkd_c
 ```
 
 ### Installing
@@ -190,6 +192,7 @@ your `PATH`:
 ```sh
 sudo ln -sf "$(pwd)/bar-functions/dwm_countdown_c" /usr/local/bin/dwm_countdown
 sudo ln -sf "$(pwd)/bar-functions/dwm_spotify_c" /usr/local/bin/dwm_spotify
+sudo ln -sf "$(pwd)/bar-functions/dwm_systemd_networkd_c" /usr/local/bin/dwm_systemd_networkd
 ```
 
 Then update `config.h` to use the binary name if it differs from the shell
