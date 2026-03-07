@@ -6,34 +6,27 @@
 
 # Dependencies: https://github.com/joestandring/countdown
 
-# Handle click actions
+# Exit early if no countdown is active
+set -- /tmp/countdown.*
+[ -e "$1" ] || exit 0
+
+f="$1"
+
 case "$BLOCK_BUTTON" in
     1)
-        # Cancel the countdown by removing its temp file
-        for f in /tmp/countdown.*; do
-            if [ -e "$f" ]; then
-				killall countdown
-                rm -f "$f"
-                notify-send "Countdown" "Cancelled"
-            fi
-        done
+        killall countdown
+        rm -f "$f"
+        notify-send "Countdown" "Cancelled"
+        exit 0
         ;;
 esac
 
-dwm_countdown () {
-    for f in /tmp/countdown.*; do
-        if [ -e "$f" ]; then
-            printf "%s" "$SEP1"
-            if [ "$IDENTIFIER" = "unicode" ]; then
-                printf "⏳ %s" "$(tail -1 /tmp/countdown.*)"
-            else
-                printf "CDN %s" "$(tail -1 /tmp/countdown.*)"
-            fi
-            printf "%s\n" "$SEP2"
+while IFS= read -r line; do
+    last="$line"
+done < "$f"
 
-            break
-        fi
-    done
-}
-
-dwm_countdown
+if [ "$IDENTIFIER" = "unicode" ]; then
+    printf "%s⏳ %s%s\n" "$SEP1" "$last" "$SEP2"
+else
+    printf "%sCDN %s%s\n" "$SEP1" "$last" "$SEP2"
+fi
