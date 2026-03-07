@@ -4,76 +4,37 @@
 # Based on dwm_resources by Joe Standring <git@joestandring.com>
 # GNU GPLv3
 
-dwm_memory () {
+case "$BLOCK_BUTTON" in
+	1) st -e tmux new-session -A -s btop_memory btop -p 4 ;;
+	3) notify-send "Top Memory Processes" "$(ps axo pid,comm,%mem --sort=-%mem | head -n 6)" ;;
+esac
 
-	# Handle click actions
-	case "$BLOCK_BUTTON" in
-		1) st -e tmux new-session -A -s btop_memory btop -p 4 ;;
-		3) notify-send "Top Memory Processes" "$(ps axo pid,comm,%mem --sort=-%mem | head -n 6)" ;;
+# Read /proc/meminfo with shell builtins (zero forks)
+while IFS=': ' read -r key val _; do
+	case "$key" in
+		MemTotal) mem_total="$val" ;;
+		MemAvailable) mem_avail="$val"; break ;;
 	esac
+done < /proc/meminfo
 
-	# Gather memory usage data
-	free_output=$(free | grep Mem)
-	MEMUSED_KB=$(echo $free_output | awk '{print $3}')
-	MEMTOTAL_KB=$(echo $free_output | awk '{print $2}')
+mem_used=$((mem_total - mem_avail))
+mem_pct=$((mem_used * 100 / mem_total))
 
-	# Calculate memory percentage
-	MEMPERCENT=$(echo "$MEMUSED_KB $MEMTOTAL_KB" | awk '{printf "%.0f", ($1/$2)*100}')
+# Battery status via sysfs (zero forks)
+BAT="BAT1"
+[ -f "/sys/class/power_supply/$BAT/status" ] || BAT="BAT0"
+threshold=75
+if [ -f "/sys/class/power_supply/$BAT/status" ]; then
+	read -r bat_status < "/sys/class/power_supply/$BAT/status"
+	[ "$bat_status" = "Discharging" ] && threshold=15
+fi
 
-	# Check battery status (try BAT1 first, then BAT0)
-	BAT="BAT1"
-	if [ ! -f "/sys/class/power_supply/$BAT/status" ]; then
-		BAT="BAT0"
-	fi
+[ "$mem_pct" -le "$threshold" ] && exit 0
 
-	# Determine if running on battery and apply appropriate threshold
-	if [ -f "/sys/class/power_supply/$BAT/status" ]; then
-		STATUS=$(cat /sys/class/power_supply/$BAT/status)
-		if [ "$STATUS" = "Discharging" ]; then
-			# On battery: print if memory utilization is above 15%
-			if [ "$MEMPERCENT" -gt 15 ]; then
-				# Convert KB to GB and round to whole number
-				MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
-				if [ "$MEMUSED_GB" -ge 1 ]; then
-					MEMUSED="${MEMUSED_GB}G"
-				else
-					# If less than 1GB, show in MB
-					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
-					MEMUSED="${MEMUSED_MB}M"
-				fi
-				printf " %s\n" "$MEMUSED"
-			fi
-		else
-			# Plugged in: print if memory utilization is above 75%
-			if [ "$MEMPERCENT" -gt 75 ]; then
-				# Convert KB to GB and round to whole number
-				MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
-				if [ "$MEMUSED_GB" -ge 1 ]; then
-					MEMUSED="${MEMUSED_GB}G"
-				else
-					# If less than 1GB, show in MB
-					MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
-					MEMUSED="${MEMUSED_MB}M"
-				fi
-				printf " %s\n" "$MEMUSED"
-			fi
-		fi
-	else
-		# Fallback: assume plugged in if battery status cannot be detected
-		if [ "$MEMPERCENT" -gt 75 ]; then
-			# Convert KB to GB and round to whole number
-			MEMUSED_GB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024/1024}')
-			if [ "$MEMUSED_GB" -ge 1 ]; then
-				MEMUSED="${MEMUSED_GB}G"
-			else
-				# If less than 1GB, show in MB
-				MEMUSED_MB=$(echo "$MEMUSED_KB" | awk '{printf "%.0f", $1/1024}')
-				MEMUSED="${MEMUSED_MB}M"
-			fi
-			printf " %s\n" "$MEMUSED"
-		fi
-	fi
-
-}
-
-dwm_memory
+# Convert KB to human-readable with shell arithmetic (zero forks)
+mem_gb=$((mem_used / 1048576))
+if [ "$mem_gb" -ge 1 ]; then
+	printf " %sG\n" "$mem_gb"
+else
+	printf " %sM\n" "$((mem_used / 1024))"
+fi
