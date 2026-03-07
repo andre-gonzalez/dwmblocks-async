@@ -157,6 +157,41 @@ To use this feature, define the `CLICKABLE_BLOCKS` feature macro in your
 Apart from that, you need `dwm` to be patched with
 [statuscmd](https://dwm.suckless.org/patches/statuscmd/).
 
+## Compiling C bar functions
+
+Some bar functions have optional C implementations for faster execution and
+lower resource usage. They produce identical output to their shell counterparts.
+
+### Available C bar functions
+
+| Script           | Source file              |
+| ---------------- | ------------------------ |
+| `dwm_countdown`  | `bar-functions/dwm_countdown.c` |
+
+### Compiling
+
+```sh
+gcc -Ofast -std=c99 -Wall -Wextra -Wpedantic -o bar-functions/dwm_countdown_c bar-functions/dwm_countdown.c
+```
+
+To reduce the binary size further, strip debug symbols:
+
+```sh
+strip bar-functions/dwm_countdown_c
+```
+
+### Installing
+
+Symlink the compiled binary into `/usr/local/bin` so it is available on your
+`PATH`:
+
+```sh
+sudo ln -sf "$(pwd)/bar-functions/dwm_countdown_c" /usr/local/bin/dwm_countdown
+```
+
+Then update `config.h` to use the binary name if it differs from the shell
+script, recompile `dwmblocks`, and restart it.
+
 ## Credits
 
 This work would not have been possible without
