@@ -68,11 +68,13 @@ $(BAR_PLAIN_BINS): $(BAR_DIR)/%_c: $(BAR_DIR)/%.c
 	$(PRINTF) "CC" $@
 	$Q$(CC) $(BAR_CFLAGS) -o $@ $<
 	$Qstrip $@
+	$Qchmod 755 $@
 
 $(BAR_SDBUS_BINS): $(BAR_DIR)/%_c: $(BAR_DIR)/%.c
 	$(PRINTF) "CC" $@
 	$Q$(CC) $(BAR_CFLAGS) $(BAR_SDBUS_CFLAGS) -o $@ $< $(BAR_SDBUS_LDLIBS)
 	$Qstrip $@
+	$Qchmod 755 $@
 
 clean:
 	$(PRINTF) "CLEAN" $(BUILD_DIR)
