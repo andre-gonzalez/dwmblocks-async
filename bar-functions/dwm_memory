@@ -34,7 +34,7 @@ fi
 # Convert KB to human-readable with shell arithmetic (zero forks)
 mem_gb=$((mem_used / 1048576))
 if [ "$mem_gb" -ge 1 ]; then
-	printf " %sG\n" "$mem_gb"
+	printf " %sG\n" "$mem_gb"
 else
-	printf " %sM\n" "$((mem_used / 1024))"
+	printf " %sM\n" "$((mem_used / 1024))"
 fi

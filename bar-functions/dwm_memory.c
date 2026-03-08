@@ -76,9 +76,9 @@ int main(void)
 
 	long gb = used / 1048576;
 	if (gb >= 1)
-		printf(" %ldG\n", gb);
+		printf(" \xee\xbf\x85 %ldG\n", gb);
 	else
-		printf(" %ldM\n", used / 1024);
+		printf(" \xee\xbf\x85 %ldM\n", used / 1024);
 
 	return 0;
 }

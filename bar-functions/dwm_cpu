@@ -48,5 +48,5 @@ if [ -f "/sys/class/power_supply/$BAT/status" ]; then
 fi
 
 if [ "$CPU_NUM" -ge "$threshold" ]; then
-	printf " %s%%\n" "$CPU_NUM"
+	printf "  %s%%\n" "$CPU_NUM"
 fi

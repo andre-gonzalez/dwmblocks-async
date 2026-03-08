@@ -90,7 +90,7 @@ int main(void)
 		threshold = 20;
 
 	if (cpu_pct >= threshold)
-		printf(" %d%%\n", cpu_pct);
+		printf(" \xef\x92\xbc %d%%\n", cpu_pct);
 
 	return 0;
 }
