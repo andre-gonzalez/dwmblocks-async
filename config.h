@@ -24,7 +24,7 @@
 	X("",	"dwm_countdown", 0,  3) \
 	X("",	"dwm_vpn", 10,  4) \
 	X("",	"dwm_systemd_networkd", 5,  5) \
-	X("",	"dwm_ufw",	60, 6) \
+	X("",	"dwm_ufw",	3600, 6) \
 	X("",	"dwm_storage", 14400,  7) \
 	X("",	"dwm_memory", 5,  8) \
 	X("",	"dwm_cpu", 5,  9) \
