@@ -6,7 +6,7 @@ FLAG_FILE="/tmp/dwm_volume_show"
 
 # Handle click actions
 case "$BLOCK_BUTTON" in
-	1) st -e tmux new-session -A -s bluetooth bluetoothctl ;;
+	1) st -e tmux new-session -A -s bluetooth sh -c 'bluetoothctl info; exec bluetoothctl' ;;
 	3) bluetoothctl disconnect ;;
 	4) pamixer -i 5 ;;
 	5) pamixer -d 5 ;;
