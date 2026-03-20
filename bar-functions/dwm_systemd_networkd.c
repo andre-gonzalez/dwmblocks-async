@@ -200,11 +200,8 @@ static void handle_click(const char *btn)
 int main(void)
 {
 	const char *btn = getenv("BLOCK_BUTTON");
-	if (btn && btn[0] != '\0') {
+	if (btn && btn[0] != '\0')
 		handle_click(btn);
-		if (btn[0] == '3')
-			return 0;
-	}
 
 	/* Wired check */
 	if (check_wired()) {

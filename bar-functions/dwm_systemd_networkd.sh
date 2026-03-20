@@ -21,7 +21,6 @@ EOF
 		pub_ip=$(curl -s ifconfig.me 2>/dev/null)
 		gateway=$(ip route show default 2>/dev/null | awk '{print $3; exit}')
 		notify-send "Network Details" "Network: $network\nInterface: $WLAN\nLocal IP: $ip_addr\nPublic IP: $pub_ip\nGateway: $gateway"
-		exit 0
 		;;
 esac
 
