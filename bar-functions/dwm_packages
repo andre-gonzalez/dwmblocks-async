@@ -2,7 +2,7 @@
 
 # Handle click actions
 case "$BLOCK_BUTTON" in
-	1) st -e tmux new-session -A -s update sudo pacman -Syu ;;
+	1) st -e tmux new-session -A -s update 'yay -Syyu --askremovemake --noconfirm' ;;
 	3) notify-send "Available Updates" "$(checkupdates | sed 's/\x1b\[[0-9;]*m//g' | awk '{print $1}' | head -n 20)" ;;
 esac
 
