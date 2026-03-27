@@ -63,15 +63,25 @@ With `dwmblocks-async`, the computer executes each block asynchronously
 
 ## Installation
 
-Clone this repository, modify `config.h` appropriately, then compile the
-program:
+Clone this repository, modify `config.h` appropriately, then compile and
+install:
 
 ```sh
 git clone https://github.com/UtkarshVerma/dwmblocks-async.git
 cd dwmblocks-async
 vi config.h
 sudo make install
+make enable-service
 ```
+
+`sudo make install` compiles and installs `dwmblocks` and all bar scripts to
+`/usr/local/bin`. The two-step process is required because `sudo` drops the
+user session environment that `systemctl --user` needs.
+
+`make enable-service` (run **without** `sudo`) installs and enables the
+`dwmblocks-bluetooth` systemd user service, which listens for Bluetooth device
+connect/disconnect events via D-Bus and instantly refreshes the bluetooth block
+in the status bar.
 
 ## Usage
 
@@ -195,8 +205,12 @@ make bar-functions
 To remove everything:
 
 ```sh
+make disable-service
 sudo make uninstall
 ```
+
+`make disable-service` (without `sudo`) stops and removes the systemd user
+service. `sudo make uninstall` then removes all binaries from `/usr/local/bin`.
 
 ## Credits
 

@@ -1,0 +1,9 @@
+#!/bin/sh
+# Monitors BlueZ D-Bus signals and triggers a dwmblocks refresh (signal 12)
+# whenever a bluetooth device's Connected property changes.
+dbus-monitor --system \
+    "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'" | \
+    grep --line-buffered '"Connected"' | \
+    while read -r _; do
+        pkill -RTMIN+12 dwmblocks
+    done
