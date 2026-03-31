@@ -99,7 +99,7 @@ while read -r _ mac _rest; do
 	case "$name" in
 		"LE_WH-1000XM3"|"WH-1000XM3") device_str="XM3" ;;
 		"Jabra Elite 3") device_str="Jabra" ;;
-		"Mi Bluetooth Speaker") device_str="󰂰 Mi" ;;
+		"Mi Bluetooth Speaker") device_str="Mi" ;;
 		*) device_str="󰂰 $name" ;;
 	esac
 
