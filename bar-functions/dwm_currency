@@ -37,8 +37,6 @@ dwm_currency() {
 	fi
 }
 
-dwm_currency
-
 work_hours() {
 	read -r dow hour <<EOF
 $(date '+%A %H')
