@@ -11,6 +11,12 @@ case "$BLOCK_BUTTON" in
         ROUTES=$(ip route show dev tun0 2>/dev/null | head -n 5)
         notify-send "VPN Details" "Interface: tun0\nIP: $IP\n\nRoutes:\n$ROUTES"
         ;;
+    3)
+        PID=$(ps aux | grep '[o]penvpn' | awk '{print $2}')
+        if [ -n "$PID" ]; then
+            sudo kill "$PID"
+        fi
+        ;;
 esac
 
 # IP=$(ip -4 addr show tun0 | awk '/inet / {split($2,a,"/"); print a[1]}')
