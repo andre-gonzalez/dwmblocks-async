@@ -33,7 +33,7 @@ dwm_currency() {
 		RATE=$(curl -sL "https://query1.finance.yahoo.com/v8/finance/chart/${CURRENCY1}${CURRENCY2}=X" -H "User-Agent: Mozilla/5.0" | jq -r ".chart.result[0].meta.regularMarketPrice")
 		printf " %s" "$(awk "BEGIN {printf \"%.2f (%.2f%%)\", $RATE, (1 - $RATE / $TARGET) * 100}")"
 	else
-		exit
+		exit 0
 	fi
 }
 
