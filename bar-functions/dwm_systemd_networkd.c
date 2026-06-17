@@ -103,6 +103,55 @@ static int get_wifi_signal(const char *ifname)
 	return signal;
 }
 
+/* Parse SSID and signal (dBm) from `iw dev <ifname> link` — fallback for nl80211-only drivers */
+static int get_wifi_info_iw(const char *ifname, char *ssid, size_t ssid_len, int *out_dbm)
+{
+	char cmd[128];
+	snprintf(cmd, sizeof(cmd), "iw dev %s link 2>/dev/null", ifname);
+	FILE *fp = popen(cmd, "r");
+	if (!fp)
+		return -1;
+
+	char line[256];
+	int got_ssid = 0, got_signal = 0;
+	*out_dbm = -100;
+	ssid[0] = '\0';
+
+	while (fgets(line, sizeof(line), fp)) {
+		char *p;
+		if (!got_ssid && (p = strstr(line, "SSID: "))) {
+			p += 6;
+			size_t n = strcspn(p, "\n");
+			if (n >= ssid_len)
+				n = ssid_len - 1;
+			memcpy(ssid, p, n);
+			ssid[n] = '\0';
+			got_ssid = 1;
+		}
+		if (!got_signal && (p = strstr(line, "signal: "))) {
+			int dbm;
+			if (sscanf(p + 8, "%d dBm", &dbm) == 1) {
+				*out_dbm = dbm;
+				got_signal = 1;
+			}
+		}
+		if (got_ssid && got_signal)
+			break;
+	}
+	pclose(fp);
+	return got_ssid ? 0 : -1;
+}
+
+/* Convert dBm to 0-100 quality scale matching existing icon thresholds */
+static int dbm_to_quality(int dbm)
+{
+	if (dbm >= -50)
+		return 100;
+	if (dbm <= -100)
+		return 0;
+	return 2 * (dbm + 100);
+}
+
 /* Non-blocking TCP connect to 1.1.1.1:53 with ~200ms timeout */
 static int check_internet(void)
 {
@@ -220,16 +269,22 @@ int main(void)
 		return 0;
 	}
 
-	/* SSID via ioctl (zero forks) */
+	/* SSID via ioctl (zero forks); fall back to iw for nl80211-only drivers */
 	char ssid[IW_ESSID_MAX_SIZE + 1] = "";
+	int iw_dbm = 0;
+	int used_iw = 0;
+
 	if (get_wifi_ssid(WLAN_IF, ssid, IW_ESSID_MAX_SIZE) < 0) {
-		puts("󰤭");
-		return 0;
+		if (get_wifi_info_iw(WLAN_IF, ssid, sizeof(ssid), &iw_dbm) < 0) {
+			puts("󰤭");
+			return 0;
+		}
+		used_iw = 1;
 	}
 
 	int strength = get_wifi_signal(WLAN_IF);
 	if (strength < 0)
-		strength = 0;
+		strength = used_iw ? dbm_to_quality(iw_dbm) : 0;
 
 	int inet = check_internet();
 

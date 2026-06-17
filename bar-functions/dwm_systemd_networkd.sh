@@ -62,12 +62,34 @@ done <<EOF
 $IW_OUT
 EOF
 
-# Signal from /proc/net/wireless (zero forks)
-while IFS=' ' read -r iface _ _ level _; do
-	case "$iface" in
-		"$WLAN":*) strength="${level%%.*}"; strength="${strength#-}"; break ;;
+# Signal: parse dBm from already-fetched iw output (works on nl80211-only drivers)
+strength=""
+while IFS= read -r line; do
+	case "$line" in
+		*"signal: "*)
+			sig="${line#*signal: }"
+			sig="${sig% dBm}"
+			sig="${sig%.*}"
+			strength=$(( (sig + 100) * 2 ))
+			[ "$strength" -gt 100 ] && strength=100
+			[ "$strength" -lt 0 ] && strength=0
+			break
+			;;
 	esac
-done < /proc/net/wireless
+done <<EOF
+$IW_OUT
+EOF
+
+# Fallback: /proc/net/wireless (legacy WE drivers)
+if [ -z "$strength" ]; then
+	while IFS=' ' read -r iface _ _ level _; do
+		case "$iface" in
+			"$WLAN":*) strength="${level%%.*}"; strength="${strength#-}"; break ;;
+		esac
+	done < /proc/net/wireless
+fi
+
+[ -n "$strength" ] || strength=50
 
 # Internet connectivity check (1 fork)
 if ! ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
