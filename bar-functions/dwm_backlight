@@ -28,15 +28,26 @@ case "$BLOCK_BUTTON" in
 esac
 
 # Check eDP-1 connected + enabled via sysfs (0 forks, replaces 2x xrandr + 4x grep)
-DRM_PATH="/sys/class/drm/card1-eDP-1"
+DRM_PATH=""
+for card in /sys/class/drm/card*-eDP-*; do
+	[ -d "$card" ] && DRM_PATH="$card" && break
+done
+[ -n "$DRM_PATH" ] || exit 0
 read -r drm_status < "$DRM_PATH/status" 2>/dev/null || exit 0
 [ "$drm_status" = "connected" ] || exit 0
 read -r drm_enabled < "$DRM_PATH/enabled" 2>/dev/null || exit 0
 [ "$drm_enabled" = "enabled" ] || exit 0
 
 # Read brightness via sysfs (0 forks, replaces 2x brightnessctl)
-read -r ACTUAL < /sys/class/backlight/intel_backlight/brightness 2>/dev/null || exit 0
-read -r MAX < /sys/class/backlight/intel_backlight/max_brightness 2>/dev/null || exit 0
+BACKLIGHT=""
+for bl in /sys/class/backlight/intel_backlight \
+          /sys/class/backlight/amdgpu_bl* \
+          /sys/class/backlight/*; do
+	[ -f "$bl/brightness" ] && BACKLIGHT="$bl" && break
+done
+[ -n "$BACKLIGHT" ] || exit 0
+read -r ACTUAL < "$BACKLIGHT/brightness" 2>/dev/null || exit 0
+read -r MAX < "$BACKLIGHT/max_brightness" 2>/dev/null || exit 0
 BRIGHT=$((ACTUAL * 100 / MAX))
 
 if [ "$BRIGHT" -eq 100 ]; then
