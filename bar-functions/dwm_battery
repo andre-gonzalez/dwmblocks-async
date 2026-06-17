@@ -41,8 +41,13 @@ case "$BLOCK_BUTTON" in
 			elif [ "$STATUS" = "Charging" ] && [ -n "$ENERGY_NOW" ] && [ -n "$ENERGY_FULL" ]; then
 				REMAINING=$((ENERGY_FULL - ENERGY_NOW))
 				h_whole=$((REMAINING / POWER_NOW))
-				h_frac=$(( (REMAINING * 10 / POWER_NOW) % 10 ))
-				TIME_LEFT="Time to full: ${h_whole}.${h_frac}h"
+				if [ "$h_whole" -eq 0 ]; then
+					mins=$((REMAINING * 60 / POWER_NOW))
+					TIME_LEFT="Time to full: ${mins} min"
+				else
+					h_frac=$(( (REMAINING * 10 / POWER_NOW) % 10 ))
+					TIME_LEFT="Time to full: ${h_whole}.${h_frac}h"
+				fi
 			fi
 		fi
 		MSG="Status: $STATUS\nCharge: ${CHARGE}%"
