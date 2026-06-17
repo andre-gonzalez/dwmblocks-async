@@ -1,15 +1,22 @@
 #!/bin/sh
 
+# Set TIMEZONE to override the displayed timezone (e.g. TIMEZONE="America/New_York")
+# Defaults to the system timezone if unset.
+
 dwm_date () {
+        # TZ="${TIMEZONE:-}"
+		TZ="America/Los_Angeles"
+
+        tz_date() { TZ="$TZ" date "$@"; }
 
         # Handle click actions
         case "$BLOCK_BUTTON" in
-            1) notify-send "$(date '+%A, %B %d, %Y')" "$(cal)
-$(cal $(date -d 'next month' '+%m %Y'))" ;;
-            3) date '+%Y-%m-%d %H:%M:%S' | xclip -selection clipboard && notify-send "Date copied to clipboard" ;;
+            1) notify-send "$(tz_date '+%A, %B %d, %Y')" "$(cal)
+$(cal $(tz_date -d 'next month' '+%m %Y'))" ;;
+            3) tz_date '+%Y-%m-%d %H:%M:%S' | xclip -selection clipboard && notify-send "Date copied to clipboard" ;;
         esac
 
-        d=$(date "+%a %d %R")
+        d=$(tz_date "+%a %d %R")
         printf "%.2s%s" "$d" "${d#???}"
 }
 
