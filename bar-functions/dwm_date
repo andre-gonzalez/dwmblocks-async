@@ -5,7 +5,7 @@
 
 dwm_date () {
         # TZ="${TIMEZONE:-}"
-		TZ="America/Los_Angeles"
+		TZ="America/Sao_Paulo"
 
         tz_date() { TZ="$TZ" date "$@"; }
 
