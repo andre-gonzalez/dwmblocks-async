@@ -26,7 +26,7 @@ BAT="BAT1"
 threshold=75
 if [ -f "/sys/class/power_supply/$BAT/status" ]; then
 	read -r bat_status < "/sys/class/power_supply/$BAT/status"
-	[ "$bat_status" = "Discharging" ] && threshold=15
+	[ "$bat_status" = "Discharging" ] && threshold=30
 fi
 
 [ "$mem_pct" -le "$threshold" ] && exit 0

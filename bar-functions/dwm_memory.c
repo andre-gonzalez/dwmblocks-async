@@ -69,7 +69,7 @@ int main(void)
 	char bat_status[32];
 	if (read_battery_status(bat_status, sizeof(bat_status)) == 0 &&
 	    strcmp(bat_status, "Discharging") == 0)
-		threshold = 15;
+		threshold = 30;
 
 	if (pct <= threshold)
 		return 0;
