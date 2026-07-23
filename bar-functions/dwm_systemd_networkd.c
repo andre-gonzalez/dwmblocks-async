@@ -25,7 +25,7 @@
 
 #define WLAN_IF "wlan0"
 
-static const char *home_networks[] = { "Davi", "CasaRio_5G", "Que Wifi?" };
+static const char *home_networks[] = { "Davi", "CasaRio_5G", "Que Wifi?","QUEWIFI-5G", "QUEWIFI-2G" };
 #define N_HOME (sizeof(home_networks) / sizeof(home_networks[0]))
 
 static int read_sysfs(const char *path, char *buf, size_t len)

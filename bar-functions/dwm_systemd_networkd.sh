@@ -106,7 +106,7 @@ if ! ping -c 1 -W 2 1.1.1.1 >/dev/null 2>&1; then
 	fi
 else
 	# Home networks — hide icon
-	case " Davi CasaRio_5G Que Wifi? " in
+	case " Davi CasaRio_5G Que Wifi? QUEWIFI-5G QUEWIFI-2G" in
 		*" $network "*)
 			echo ""
 			exit 0
