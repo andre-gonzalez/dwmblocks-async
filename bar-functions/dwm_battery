@@ -63,7 +63,7 @@ read -r STATUS < "$BAT_PATH/status"
 # Determine icon based on charge percentage
 if [ "$CHARGE" -ge 77 ] && [ "$STATUS" != "Discharging" ]; then
 	exit 0
-elif [ "$CHARGE" -ge 80 ]; then
+elif [ "$CHARGE" -ge 77 ]; then
 	ICON=""
 elif [ "$CHARGE" -le 20 ]; then
 	ICON=" $CHARGE"
@@ -71,7 +71,7 @@ elif [ "$CHARGE" -le 40 ]; then
 	ICON=" $CHARGE"
 elif [ "$CHARGE" -le 60 ]; then
 	ICON=""
-elif [ "$CHARGE" -le 77 ]; then
+elif [ "$CHARGE" -le 76 ]; then
 	ICON=""
 else
 	ICON="?"
