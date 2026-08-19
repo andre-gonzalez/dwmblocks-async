@@ -16,7 +16,7 @@ $(cal $(tz_date -d 'next month' '+%m %Y'))" ;;
             3) tz_date '+%Y-%m-%d %H:%M:%S' | xclip -selection clipboard && notify-send "Date copied to clipboard" ;;
         esac
 
-        d=$(tz_date "+%a %d %R")
+        d=$(tz_date "+%d  %R")
         printf "%.2s%s" "$d" "${d#???}"
 }
 
