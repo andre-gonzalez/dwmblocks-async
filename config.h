@@ -29,6 +29,7 @@
 	X("",	"dwm_memory", 5,  8) \
 	X("",	"dwm_cpu", 5,  9) \
 	X("",	"dwm_packages",	14400, 13) \
+	X("",	"dwm_kdeconnect", 300,  17) \
 	X("",	"dwm_battery", 300,  15) \
 	X("",	"dwm_bluetooth", 60, 12) \
 	X("",	"dwm_pulse", 0, 10) \

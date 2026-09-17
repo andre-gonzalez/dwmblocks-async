@@ -21,7 +21,9 @@ OBJS := $(subst $(SRC_DIR)/,$(BUILD_DIR)/,$(SRCS:.c=.o))
 
 INSTALL_DIR := $(DESTDIR)$(PREFIX)/bin
 SERVICES_DIR := services
-SERVICE_NAME := dwmblocks-bluetooth
+SERVICE_NAMES := dwmblocks-bluetooth dwmblocks-kdeconnect
+# Services shipping a helper script alongside their unit file
+SERVICE_SCRIPTS := dwmblocks-bluetooth
 
 # Bar-function C replacements
 BAR_DIR := bar-functions
@@ -30,7 +32,7 @@ BAR_CFLAGS := -Ofast -std=c99 -Wall -Wpedantic -Wextra
 BAR_PLAIN := dwm_countdown dwm_systemd_networkd dwm_memory dwm_cpu
 BAR_PLAIN_BINS := $(addprefix $(BAR_DIR)/,$(addsuffix _c,$(BAR_PLAIN)))
 
-BAR_SDBUS := dwm_spotify dwm_do_not_disturb
+BAR_SDBUS := dwm_spotify dwm_do_not_disturb dwm_kdeconnect
 BAR_SDBUS_BINS := $(addprefix $(BAR_DIR)/,$(addsuffix _c,$(BAR_SDBUS)))
 BAR_SDBUS_CFLAGS := $(shell pkg-config --cflags libsystemd)
 BAR_SDBUS_LDLIBS := $(shell pkg-config --libs libsystemd)
@@ -95,18 +97,24 @@ install: $(BUILD_DIR)/$(BIN) bar-functions
 		printf "%-8s %s\n" "INSTALL" $(INSTALL_DIR)/$(name); \
 		install -m 755 $(BAR_DIR)/$(name) $(INSTALL_DIR)/$(name); \
 	)
-	$(PRINTF) "INSTALL" $(INSTALL_DIR)/$(SERVICE_NAME)
-	$Qinstall -m 755 $(SERVICES_DIR)/$(SERVICE_NAME) $(INSTALL_DIR)/$(SERVICE_NAME)
+	$Q$(foreach name,$(SERVICE_SCRIPTS),\
+		printf "%-8s %s\n" "INSTALL" $(INSTALL_DIR)/$(name); \
+		install -m 755 $(SERVICES_DIR)/$(name) $(INSTALL_DIR)/$(name); \
+	)
 	@echo ""
-	@echo "Run 'make enable-service' (without sudo) to install and enable the bluetooth monitor service."
+	@echo "Run 'make enable-service' (without sudo) to install and enable the monitor services."
 
 enable-service:
-	$(PRINTF) "INSTALL" $(HOME)/.config/systemd/user/$(SERVICE_NAME).service
-	$Qinstall -D -m 644 $(SERVICES_DIR)/$(SERVICE_NAME).service $(HOME)/.config/systemd/user/$(SERVICE_NAME).service
+	$Q$(foreach name,$(SERVICE_NAMES),\
+		printf "%-8s %s\n" "INSTALL" $(HOME)/.config/systemd/user/$(name).service; \
+		install -D -m 644 $(SERVICES_DIR)/$(name).service $(HOME)/.config/systemd/user/$(name).service; \
+	)
 	$(PRINTF) "RELOAD" "systemd user daemon"
 	$Qsystemctl --user daemon-reload
-	$(PRINTF) "ENABLE" $(SERVICE_NAME).service
-	$Qsystemctl --user enable --now $(SERVICE_NAME).service
+	$Q$(foreach name,$(SERVICE_NAMES),\
+		printf "%-8s %s\n" "ENABLE" $(name).service; \
+		systemctl --user enable --now $(name).service; \
+	)
 
 uninstall:
 	$(PRINTF) "RM" $(INSTALL_DIR)/$(BIN)
@@ -119,16 +127,20 @@ uninstall:
 		printf "%-8s %s\n" "RM" $(INSTALL_DIR)/$(name); \
 		$(RM) $(INSTALL_DIR)/$(name); \
 	)
-	$(PRINTF) "RM" $(INSTALL_DIR)/$(SERVICE_NAME)
-	$Q$(RM) $(INSTALL_DIR)/$(SERVICE_NAME)
+	$Q$(foreach name,$(SERVICE_SCRIPTS),\
+		printf "%-8s %s\n" "RM" $(INSTALL_DIR)/$(name); \
+		$(RM) $(INSTALL_DIR)/$(name); \
+	)
 	@echo ""
-	@echo "Run 'make disable-service' (without sudo) to stop, disable, and remove the bluetooth monitor service."
+	@echo "Run 'make disable-service' (without sudo) to stop, disable, and remove the monitor services."
 
 disable-service:
-	$(PRINTF) "DISABLE" $(SERVICE_NAME).service
-	$Q-systemctl --user disable --now $(SERVICE_NAME).service
-	$(PRINTF) "RM" $(HOME)/.config/systemd/user/$(SERVICE_NAME).service
-	$Q$(RM) $(HOME)/.config/systemd/user/$(SERVICE_NAME).service
+	$Q$(foreach name,$(SERVICE_NAMES),\
+		printf "%-8s %s\n" "DISABLE" $(name).service; \
+		systemctl --user disable --now $(name).service || true; \
+		printf "%-8s %s\n" "RM" $(HOME)/.config/systemd/user/$(name).service; \
+		$(RM) $(HOME)/.config/systemd/user/$(name).service; \
+	)
 	$(PRINTF) "RELOAD" "systemd user daemon"
 	$Qsystemctl --user daemon-reload
 

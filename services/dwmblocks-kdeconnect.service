@@ -1,0 +1,11 @@
+[Unit]
+Description=Trigger dwmblocks phone battery refresh on KDE Connect changes
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/local/bin/dwm_kdeconnect --watch
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

@@ -79,9 +79,14 @@ make enable-service
 user session environment that `systemctl --user` needs.
 
 `make enable-service` (run **without** `sudo`) installs and enables the
-`dwmblocks-bluetooth` systemd user service, which listens for Bluetooth device
-connect/disconnect events via D-Bus and instantly refreshes the bluetooth block
-in the status bar.
+systemd user services that refresh blocks on D-Bus events instead of on a
+timer:
+
+- `dwmblocks-bluetooth` listens for Bluetooth device connect/disconnect events
+  and instantly refreshes the bluetooth block.
+- `dwmblocks-kdeconnect` runs `dwm_kdeconnect --watch` and refreshes the phone
+  block whenever the phone's battery, its reachability, or the KDE Connect
+  daemon itself changes.
 
 ## Usage
 
@@ -182,6 +187,7 @@ lower resource usage. They produce identical output to their shell counterparts.
 | `dwm_memory`            | `bar-functions/dwm_memory.c`            | none             |
 | `dwm_cpu`               | `bar-functions/dwm_cpu.c`               | none             |
 | `dwm_do_not_disturb`    | `bar-functions/dwm_do_not_disturb.c`    | `libsystemd`    |
+| `dwm_kdeconnect`        | `bar-functions/dwm_kdeconnect.c`        | `libsystemd`     |
 
 ### Compiling and installing
 
@@ -210,7 +216,8 @@ sudo make uninstall
 ```
 
 `make disable-service` (without `sudo`) stops and removes the systemd user
-service. `sudo make uninstall` then removes all binaries from `/usr/local/bin`.
+services. `sudo make uninstall` then removes all binaries from
+`/usr/local/bin`.
 
 ## Credits
 
