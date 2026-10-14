@@ -6,9 +6,9 @@
 
 # Handle click actions
 case "$BLOCK_BUTTON" in
-1) notify-send "Disk Usage" "$(df -h --output=target,size,used,avail,pcent -x tmpfs -x devtmpfs | head -n 10)" ;;
-# limpar-disco asks about ncdu itself; wait so the final report stays visible
-3) st -e tmux new-session -A -s limpar-disco sh -c 'limpar-disco; printf "\nEnter para fechar"; read -r _' ;;
+	1) notify-send "Disk Usage" "$(df -h --output=target,size,used,avail,pcent -x tmpfs -x devtmpfs | head -n 10)" ;;
+	# limpar-disco asks about ncdu itself; wait so the final report stays visible
+	3) st -e tmux new-session -A -s limpar-disco sh -c 'limpar-disco; printf "\nEnter para fechar"; read -r _' ;;
 esac
 
 # Calculate actual space used by /home directory (1 fork, unavoidable)
@@ -19,11 +19,11 @@ HOME_USED="${du_out%%	*}"
 val="${HOME_USED%[A-Za-z]*}"
 unit="${HOME_USED#"$val"}"
 case "$unit" in
-K | k) HOME_USED_GB=0 ;;
-M | m) HOME_USED_GB=0 ;;
-G | g) HOME_USED_GB="${val%%.*}" ;;
-T | t) HOME_USED_GB=$((${val%%.*} * 1024)) ;;
-*) HOME_USED_GB=0 ;;
+	K|k) HOME_USED_GB=0 ;;
+	M|m) HOME_USED_GB=0 ;;
+	G|g) HOME_USED_GB="${val%%.*}" ;;
+	T|t) HOME_USED_GB=$(( ${val%%.*} * 1024 )) ;;
+	*)   HOME_USED_GB=0 ;;
 esac
 
 # Detect filesystem type from /proc/mounts (0 forks)
@@ -33,7 +33,7 @@ while read -r _dev mnt fstype _rest; do
 		filesystem="$fstype"
 		break
 	fi
-done </proc/mounts
+done < /proc/mounts
 
 if [ "$filesystem" = "btrfs" ]; then
 	# Single btrfs call with raw bytes (1 fork, replaces 2 btrfs + 4 awk + 2 sed)
@@ -42,19 +42,19 @@ if [ "$filesystem" = "btrfs" ]; then
 	DISK_TOTAL_BYTES=""
 	while IFS= read -r line; do
 		case "$line" in
-		*"Device size:"*)
-			read -r DISK_TOTAL_BYTES <<-TRIMEOF
+			*"Device size:"*)
+				read -r DISK_TOTAL_BYTES <<-TRIMEOF
 				${line##*:}
-			TRIMEOF
-			;;
-		"    Used:"*)
-			read -r DISK_USED_BYTES <<-TRIMEOF
+				TRIMEOF
+				;;
+			"    Used:"*)
+				read -r DISK_USED_BYTES <<-TRIMEOF
 				${line##*:}
-			TRIMEOF
-			;;
+				TRIMEOF
+				;;
 		esac
 	done <<-BTRFSEOF
-		$BTRFS_OUT
+	$BTRFS_OUT
 	BTRFSEOF
 
 	if [ -n "$DISK_USED_BYTES" ] && [ -n "$DISK_TOTAL_BYTES" ] && [ "$DISK_TOTAL_BYTES" -gt 0 ] 2>/dev/null; then
@@ -70,7 +70,7 @@ else
 	# Non-btrfs: single df call, parse with read (1 fork, replaces df + tail + 4 awk)
 	read -r _header
 	read -r _dev DISK_TOTAL_BLOCKS DISK_USED_BLOCKS DISK_AVAIL_BLOCKS _rest <<-DFEOF
-		$(df -P /)
+	$(df -P /)
 	DFEOF
 
 	if [ -n "$DISK_USED_BLOCKS" ] && [ -n "$DISK_TOTAL_BLOCKS" ] && [ "$DISK_TOTAL_BLOCKS" -gt 0 ] 2>/dev/null; then
