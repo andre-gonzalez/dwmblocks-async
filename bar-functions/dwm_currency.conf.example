@@ -1,2 +1,3 @@
+# Copy to ${XDG_CONFIG_HOME:-$HOME/.config}/dwmblocks/dwm_currency.conf
 ENABLED=0
 TARGET=5.25

@@ -7,25 +7,25 @@
 
 # Dependencies: curl, jq
 
-. "${0%/*}/dwm_currency.conf"
+. "${XDG_CONFIG_HOME:-$HOME/.config}/dwmblocks/dwm_currency.conf"
 
 CURRENCY1=USD
 CURRENCY2=BRL
 
 # Handle click actions
 case "$BLOCK_BUTTON" in
-	1)
-		RATE=$(curl -sL "https://query1.finance.yahoo.com/v8/finance/chart/${CURRENCY1}${CURRENCY2}=X" -H "User-Agent: Mozilla/5.0" | jq -r ".chart.result[0].meta.regularMarketPrice")
-		if [ -n "$RATE" ]; then
-			DETAIL=$(awk "BEGIN {printf \"1 $CURRENCY1 = %.4f $CURRENCY2\n1 $CURRENCY2 = %.4f $CURRENCY1\nTarget: $TARGET\nDiff: %.2f%%\", $RATE, 1/$RATE, (1 - $RATE / $TARGET) * 100}")
-			notify-send "Exchange Rate" "$DETAIL"
-		else
-			notify-send "Exchange Rate" "Failed to fetch rate"
-		fi
-		;;
-	3)
-		qutebrowser "https://www.google.com/finance/quote/$CURRENCY1-$CURRENCY2" &
-		;;
+1)
+	RATE=$(curl -sL "https://query1.finance.yahoo.com/v8/finance/chart/${CURRENCY1}${CURRENCY2}=X" -H "User-Agent: Mozilla/5.0" | jq -r ".chart.result[0].meta.regularMarketPrice")
+	if [ -n "$RATE" ]; then
+		DETAIL=$(awk "BEGIN {printf \"1 $CURRENCY1 = %.4f $CURRENCY2\n1 $CURRENCY2 = %.4f $CURRENCY1\nTarget: $TARGET\nDiff: %.2f%%\", $RATE, 1/$RATE, (1 - $RATE / $TARGET) * 100}")
+		notify-send "Exchange Rate" "$DETAIL"
+	else
+		notify-send "Exchange Rate" "Failed to fetch rate"
+	fi
+	;;
+3)
+	qutebrowser "https://www.google.com/finance/quote/$CURRENCY1-$CURRENCY2" &
+	;;
 esac
 
 dwm_currency() {
@@ -43,11 +43,11 @@ $(date '+%A %H')
 EOF
 
 	case "$dow" in
-		Monday|Tuesday|Wednesday|Thursday|Friday)
-			if [ "$hour" -ge 8 ] && [ "$hour" -lt 17 ]; then
-				dwm_currency
-			fi
-			;;
+	Monday | Tuesday | Wednesday | Thursday | Friday)
+		if [ "$hour" -ge 8 ] && [ "$hour" -lt 17 ]; then
+			dwm_currency
+		fi
+		;;
 	esac
 }
 
