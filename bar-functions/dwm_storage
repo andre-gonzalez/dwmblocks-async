@@ -7,7 +7,7 @@
 # Handle click actions
 case "$BLOCK_BUTTON" in
 	1) notify-send "Disk Usage" "$(df -h --output=target,size,used,avail,pcent -x tmpfs -x devtmpfs | head -n 10)" ;;
-	3) st -e tmux new-session -A -s ncdu sh -c 'limpar-disco; ncdu /' ;;
+	3) st -e tmux new-session -A -s ncdu sh -c 'limpar-disco; ncdu --exclude .snapshots --exclude-kernfs /' ;;
 esac
 
 # Calculate actual space used by /home directory (1 fork, unavoidable)
