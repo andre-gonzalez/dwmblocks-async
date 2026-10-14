@@ -19,12 +19,22 @@ checkupdates() {
 	pacman -Qqu --dbpath "$CHECKUPDATES_DB" 2>/dev/null
 }
 
-cupd=$(checkupdates | wc -l)
-if [ "$cupd" -gt 150 ]; then
-	printf " %s\n" "$cupd"
+# ~/.scripts/save-data writes its profile (light | aggressive) here while a
+# metered-network profile is applied: then skip the database sync (~10 MB),
+# count from the last synced copy and show an indicator (first letter).
+SAVE_DATA_PROFILE=$(cat "$HOME/.cache/save-data/profile" 2>/dev/null)
+
+if [ -n "$SAVE_DATA_PROFILE" ]; then
+	cupd=$(pacman -Qqu --dbpath "$CHECKUPDATES_DB" 2>/dev/null | wc -l)
+	indicator="󰾆 $(printf '%.1s' "$SAVE_DATA_PROFILE" | tr '[:lower:]' '[:upper:]')"
 else
-	printf "\n"
+	cupd=$(checkupdates | wc -l)
+	indicator=""
 fi
+
+updates=""
+[ "$cupd" -gt 150 ] && updates=" $cupd"
+printf "%s\n" "$indicator${indicator:+${updates:+ }}$updates"
 
 # Skip downloading updates on metered connections or on "Lopes" Wi-Fi
 network=$(iwctl station wlan0 show | grep -Po 'Connected network \K.*' | awk '{$1=$1;print}')

@@ -51,4 +51,8 @@ EOF
 	esac
 }
 
+# No periodic request while ~/.scripts/save-data runs its aggressive profile;
+# a click (above) still fetches the rate on demand.
+[ "$(cat "$HOME/.cache/save-data/profile" 2>/dev/null)" = "aggressive" ] && exit 0
+
 work_hours
