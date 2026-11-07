@@ -11,20 +11,23 @@ case "$BLOCK_BUTTON" in
 	3) st -e tmux new-session -A -s limpar-disco sh -c 'limpar-disco; printf "\nEnter para fechar"; read -r _' ;;
 esac
 
-# Calculate actual space used by /home directory (1 fork, unavoidable)
-du_out=$(du -sh /home 2>/dev/null)
-HOME_USED="${du_out%%	*}"
-
-# Convert HOME_USED to GB with shell arithmetic (0 forks)
-val="${HOME_USED%[A-Za-z]*}"
-unit="${HOME_USED#"$val"}"
-case "$unit" in
-	K|k) HOME_USED_GB=0 ;;
-	M|m) HOME_USED_GB=0 ;;
-	G|g) HOME_USED_GB="${val%%.*}" ;;
-	T|t) HOME_USED_GB=$(( ${val%%.*} * 1024 )) ;;
-	*)   HOME_USED_GB=0 ;;
+# Calculate actual space used by /home directory (1 fork, unavoidable).
+# KiB as a plain integer: `du -h` writes "8,0G" when LC_NUMERIC uses a
+# decimal comma (pt_BR), which no integer test accepts.
+du_out=$(du -sk /home 2>/dev/null)
+HOME_USED_KB="${du_out%%	*}"
+case "$HOME_USED_KB" in
+	''|*[!0-9]*) HOME_USED_KB=0 ;;
 esac
+
+# GiB, and a du -h style label for the bar (0 forks)
+HOME_USED_GB=$((HOME_USED_KB / 1048576))
+if [ "$HOME_USED_GB" -ge 1024 ]; then
+	tenths=$((HOME_USED_KB * 10 / 1073741824))
+	HOME_USED="$((tenths / 10)).$((tenths % 10))T"
+else
+	HOME_USED="${HOME_USED_GB}G"
+fi
 
 # Detect filesystem type from /proc/mounts (0 forks)
 filesystem=""
@@ -86,8 +89,9 @@ else
 	fi
 fi
 
-# Display output (0 forks)
-if [ -n "$HOME_USED_GB" ] && [ "$HOME_USED_GB" -lt 150 ] && [ "$HOME_USED_GB" -gt 0 ] 2>/dev/null; then
+# Display output (0 forks): home usage only from 150 GiB on (below 1 GiB
+# counts as 0, which is below too), disk percentage only above 85%
+if [ "$HOME_USED_GB" -lt 150 ]; then
 	if [ "$DISK_PERCENT" -gt 85 ] 2>/dev/null; then
 		printf " %s%%\n" "$DISK_PERCENT"
 	fi
