@@ -60,6 +60,11 @@ while read -r _ mac _rest; do
 
 	[ -z "$name" ] && continue
 
+	# Hide devices that must not show in the bar
+	case "$name" in
+	"POCO X7 Pro") continue ;;
+	esac
+
 	# Check if this device is the active Bluetooth audio sink
 	audio_icon=""
 	audio_vol=""
@@ -133,8 +138,10 @@ done <<EOF
 $CONNECTED
 EOF
 
-if [ -n "$output" ]; then
-	printf "%s" "$output"
+# If all connected devices are hidden, show nothing (same as no device)
+if [ -z "$output" ]; then
+	printf "\n"
+	exit 0
 fi
 
-printf "%s\n" "$SEP2"
+printf "%s%s\n" "$output" "$SEP2"
